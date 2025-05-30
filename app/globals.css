@@ -3,6 +3,14 @@
 @tailwind utilities;
 
 @import url('https://rsms.me/inter/inter.css');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+@font-face {
+  font-family: 'chippunk';
+  src: url('/Chippunk.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 
 * {
   box-sizing: border-box;
@@ -46,4 +54,129 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica,
     ubuntu, roboto, noto, segoe ui, arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Entferne den tropfenden Blut-Effekt für GREET-Titel */
+.bloody-text-drip {
+  position: relative;
+  text-shadow:
+    0 2px 2px #900,
+    0 4px 6px #600,
+    0 8px 12px #300;
+}
+
+.font-tech {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.matrix-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.btn, .btn-matrix {
+  font-family: 'chippunk', sans-serif !important;
+}
+
+.wallet-adapter-button,
+.wallet-adapter-button-trigger,
+.wallet-adapter-button.btn,
+.wallet-adapter-button.btn-primary,
+.wallet-adapter-button.btn-matrix,
+.wallet-adapter-button:not([disabled]) {
+  background: #ab9ff2 !important;
+  color: #111 !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+}
+.wallet-adapter-button:hover,
+.wallet-adapter-button:focus {
+  background: #8c7cc3 !important;
+  color: #111 !important;
+}
+
+.btn-matrix {
+  background: #00FF41 !important;
+  color: #111 !important;
+  border: none !important;
+}
+.btn-matrix:hover, .btn-matrix:focus {
+  background: #22cc33 !important;
+  color: #111 !important;
+}
+
+.font-chippunk {
+  font-family: 'chippunk', sans-serif !important;
+}
+
+.wallet-adapter-button,
+.wallet-adapter-button * {
+  color: #fff !important;
+}
+
+.greet-glow {
+  text-shadow: 0 0 8px #00FF41, 0 0 16px #00FF41;
+}
+
+.animate-float {
+  animation: float 2.5s ease-in-out infinite;
+}
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-24px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-talk {
+  animation: talk-wobble 0.4s infinite alternate;
+}
+@keyframes talk-wobble {
+  0% { transform: scale(1) rotate(-2deg); }
+  100% { transform: scale(1.05) rotate(2deg); }
+}
+
+.typewriter {
+  display: inline-block;
+  white-space: pre-wrap;
+  border-right: 2px solid #00FF41;
+  animation: blink-caret 0.75s step-end infinite;
+}
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: #00FF41; }
+}
+
+.animate-pulse-wallet {
+  animation: pulse-wallet 1.2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+@keyframes pulse-wallet {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.07); filter: brightness(1.15); }
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #00FF41 #222;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  background: #222;
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(120deg, #00FF41 60%, #ab9ff2 100%);
+  border-radius: 8px;
+  box-shadow: 0 0 8px #00FF41, 0 0 16px #ab9ff2;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #00FF41;
 }

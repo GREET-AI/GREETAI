@@ -1,8 +1,8 @@
 {
-  "name": "solana-web3-template",
+  "name": "greet-app",
   "version": "0.1.0",
-  "description": "Template for Solana Web3 Apps",
-  "author": "Nightly Labs",
+  "description": "Send spooky greetings on Solana",
+  "author": "GREET Team",
   "license": "MIT",
   "private": false,
   "scripts": {
@@ -12,39 +12,31 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@nightlylabs/wallet-selector-solana": "0.3.11",
-    "@react-spring/three": "9.1.1",
-    "@react-spring/web": "9.1.1",
-    "@react-three/drei": "4.1.8",
-    "@react-three/fiber": "6.0.14",
-    "@solana/web3.js": "^1.78.5",
-    "@svgr/webpack": "^8.1.0",
+    "@playwright/test": "^1.52.0",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.34",
+    "@solana/wallet-adapter-wallets": "^0.19.25",
+    "@solana/web3.js": "^1.98.2",
+    "encoding": "^0.1.13",
+    "framer-motion": "^10.16.4",
+    "next": "13.5.1",
+    "pino-pretty": "^13.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "sonner": "^2.0.3",
+    "tailwindcss": "3.3.3",
+    "twitter-api-v2": "^1.23.2",
+    "typescript": "5.2.2"
+  },
+  "devDependencies": {
     "@types/node": "20.6.2",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
-    "babel-plugin-macros": "^3.1.0",
-    "bs58": "^6.0.0",
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",
-    "next": "13.5.1",
-    "postcss": "8.4.30",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "sonner": "^1.0.2",
-    "styled-components": "5.2.3",
-    "tailwindcss": "3.3.3",
-    "three": "0.127.0",
-    "tweetnacl": "^1.0.3",
-    "typescript": "5.2.2",
-    "wouter": "2.7.4"
-  },
-  "overrides": {
-    "babel-plugin-macros": "^3.0.1"
-  },
-  "devDependencies": {
-    "@types/three": "^0.156.0",
-    "encoding": "^0.1.13"
-  },
-  "packageManager": "yarn@4.3.0+sha512.1606bef7c84bc7d83b8576063de2fd08f7d69f9939015bed800f9585a002390268ecc777e9feeba7e26e9556aef6beaad4806968db2182ab5dd3e955ab3b9a0b"
+    "playwright": "^1.52.0",
+    "postcss": "8.4.30"
+  }
 }
