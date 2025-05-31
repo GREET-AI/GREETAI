@@ -1,33 +1,52 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { WalletReadyState, WalletAccountError } from "@solana/wallet-adapter-base";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getAdapter } from "../misc/adapter";
 import { getSolana } from "../misc/solana";
 import ActionStarryButton from "./ActionStarryButton";
 import StarryButton from "./StarryButton";
 import ChangeNetworkButton from "./ChangeNetworkButton";
+import RegisterModal from "./RegisterModal";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 
 const StickyHeader: React.FC = () => {
   const [publicKey, setPublicKey] = React.useState<string | undefined>();
   const [walletName, setWalletName] = React.useState<string | null>(null);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+
   useEffect(() => {
     const init = async () => {
       const adapter = await getAdapter();
 
-      adapter.on("connect", (publicKey: PublicKey) => {
+      adapter.on("connect", async (publicKey: PublicKey) => {
         if (publicKey) {
-          setPublicKey(publicKey.toString());
+          const pubKeyString = publicKey.toString();
+          setPublicKey(pubKeyString);
           setWalletName(adapter.selectedWallet?.name || null);
+
+          // Check if user exists
+          try {
+            const response = await fetch(`/api/user/check?wallet=${pubKeyString}`);
+            const data = await response.json();
+            
+            if (!data.exists) {
+              setShowRegisterModal(true);
+            }
+          } catch (error) {
+            console.error('Error checking user:', error);
+            // If we can't check, show the modal anyway
+            setShowRegisterModal(true);
+          }
         }
       });
 
       adapter.on("disconnect", () => {
         setPublicKey(undefined);
         setWalletName(null);
+        setShowRegisterModal(false);
       });
 
       adapter.on("change", () => {
@@ -54,191 +73,201 @@ const StickyHeader: React.FC = () => {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 w-full bg-opacity-50  p-6 z-10">
-      <div className="flex items-center justify-between">
-        <div>
-          {/* <Image
-            style={{ width: '200px', cursor: 'pointer' }}
-            src={NightlyLogo}
-            alt='logo'
-            onClick={() => {
-              // redirect to nightly.app
-              window.location.href = 'https://nightly.app'
-            }}
-          /> */}
-        </div>
-        <div className="flex flex-col space-y-4">
-          <StarryButton
-            connected={publicKey !== undefined}
-            onConnect={async () => {
-              const adapter = await getAdapter();
-              try {
-                await adapter.connect();
-              } catch (error) {
-                await adapter.disconnect().then(() => {});
-                console.log(error);
-              }
-            }}
-            onDisconnect={async () => {
-              try {
+    <>
+      <header className="fixed top-0 left-0 w-full bg-opacity-50  p-6 z-10">
+        <div className="flex items-center justify-between">
+          <div>
+            {/* <Image
+              style={{ width: '200px', cursor: 'pointer' }}
+              src={NightlyLogo}
+              alt='logo'
+              onClick={() => {
+                // redirect to nightly.app
+                window.location.href = 'https://nightly.app'
+              }}
+            /> */}
+          </div>
+          <div className="flex flex-col space-y-4">
+            <StarryButton
+              connected={publicKey !== undefined}
+              onConnect={async () => {
                 const adapter = await getAdapter();
+                try {
+                  await adapter.connect();
+                } catch (error) {
+                  await adapter.disconnect().then(() => {});
+                  console.log(error);
+                }
+              }}
+              onDisconnect={async () => {
+                try {
+                  const adapter = await getAdapter();
 
-                await adapter.disconnect();
-              } catch (error) {
-                console.log(error);
-              }
-            }}
-            publicKey={publicKey}
-          />
-          {publicKey && (
-            <>
-              <ActionStarryButton
-                onClick={async () => {
-                  const signTransaction = async () => {
-                    const solana = getSolana();
-                    const adapter = await getAdapter();
-                    const ix = SystemProgram.transfer({
-                      fromPubkey: new PublicKey(publicKey),
-                      lamports: 1e6,
-                      toPubkey: new PublicKey(
-                        "C3XueH9USYvEioWKvn3TkApiAf2TjYd7Gpqi83h6cNXg"
-                      ),
-                    });
-                    const tx = new Transaction().add(ix);
-                    const a = await solana.getLatestBlockhash();
-                    tx.recentBlockhash = a.blockhash;
-                    tx.feePayer = new PublicKey(publicKey);
-                    const signedTx = await adapter.signTransaction!(tx);
-                    const sig = await solana.sendRawTransaction(
-                      signedTx.serialize()
-                    );
-                    toast.success("Transaction sent!", {
-                      action: {
-                        label: "Show Transaction",
-                        onClick: () => {
-                          // Open url in a new tab
-                          window.open(
-                            `https://explorer.solana.com/tx/${sig}`,
-                            "_blank"
-                          );
-                        },
-                      },
-                    });
-                  };
-                  toast.promise(signTransaction, {
-                    loading: "Signing Transaction...",
-                    success: (_) => {
-                      return `Transaction signed!`;
-                    },
-                    error: (error) => {
-                      console.log(error);
-                      return "Operation has been rejected!";
-                    },
-                  });
-                }}
-                name="Sign Transaction"
-              ></ActionStarryButton>
-              <ActionStarryButton
-                onClick={async () => {
-                  const signAllTransactions = async () => {
-                    const solana = getSolana();
-                    const adapter = await getAdapter();
-                    const ix = SystemProgram.transfer({
-                      fromPubkey: new PublicKey(publicKey),
-                      lamports: 1e6,
-                      toPubkey: new PublicKey(
-                        "C3XueH9USYvEioWKvn3TkApiAf2TjYd7Gpqi83h6cNXg"
-                      ),
-                    });
-                    const txs = [
-                      new Transaction().add(ix),
-                      new Transaction().add(ix).add(ix),
-                    ];
-
-                    const a = await solana.getLatestBlockhash();
-                    for (const tx of txs) {
+                  await adapter.disconnect();
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+              publicKey={publicKey}
+            />
+            {publicKey && (
+              <>
+                <ActionStarryButton
+                  onClick={async () => {
+                    const signTransaction = async () => {
+                      const solana = getSolana();
+                      const adapter = await getAdapter();
+                      const ix = SystemProgram.transfer({
+                        fromPubkey: new PublicKey(publicKey),
+                        lamports: 1e6,
+                        toPubkey: new PublicKey(
+                          "C3XueH9USYvEioWKvn3TkApiAf2TjYd7Gpqi83h6cNXg"
+                        ),
+                      });
+                      const tx = new Transaction().add(ix);
+                      const a = await solana.getLatestBlockhash();
                       tx.recentBlockhash = a.blockhash;
                       tx.feePayer = new PublicKey(publicKey);
-                    }
-
-                    const sendPromises: Promise<string>[] = [];
-                    const signedTxs = await adapter.signAllTransactions!(txs);
-                    for (const signedTx of signedTxs) {
-                      sendPromises.push(
-                        solana.sendRawTransaction(signedTx.serialize())
+                      const signedTx = await adapter.signTransaction!(tx);
+                      const sig = await solana.sendRawTransaction(
+                        signedTx.serialize()
                       );
-                    }
-
-                    toast.promise(Promise.all(sendPromises), {
-                      loading: "Sending Transactions...",
+                      toast.success("Transaction sent!", {
+                        action: {
+                          label: "Show Transaction",
+                          onClick: () => {
+                            // Open url in a new tab
+                            window.open(
+                              `https://explorer.solana.com/tx/${sig}`,
+                              "_blank"
+                            );
+                          },
+                        },
+                      });
+                    };
+                    toast.promise(signTransaction, {
+                      loading: "Signing Transaction...",
                       success: (_) => {
-                        return `Transactions sent!`;
+                        return `Transaction signed!`;
                       },
-                      error: "Transactions failed to send!",
+                      error: (error) => {
+                        console.log(error);
+                        return "Operation has been rejected!";
+                      },
                     });
-                  };
-                  toast.promise(signAllTransactions, {
-                    loading: "Signing Transactions...",
-                    success: (_) => {
-                      return `Transactions signed!`;
-                    },
-                    error: "Operation has been rejected!",
-                  });
-                }}
-                name="Sign All"
-              ></ActionStarryButton>
-              <ActionStarryButton
-                onClick={async () => {
-                  const signMessage = async () => {
-                    const adapter = await getAdapter();
-                    const msg = new Uint8Array(
-                      Buffer.from("I love Nightly 🦊")
-                    );
-                    const signature = await adapter.signMessage(msg);
-
-                    // Verify the signature
-                    const signatureBuffer = signature;
-                    const publickeyBuffer = bs58.decode(publicKey);
-                    const isVerified = nacl.sign.detached.verify(
-                      msg,
-                      signatureBuffer,
-                      publickeyBuffer
-                    );
-                    // console.log(isVerified);
-                  };
-                  toast.promise(signMessage, {
-                    loading: "Signing message...",
-                    success: (_) => {
-                      return `Message signed!`;
-                    },
-                    error: "Operation has been rejected!",
-                  });
-                }}
-                name="Sign Message"
-              ></ActionStarryButton>
-              {/* Custom function to change network */}
-              {walletName === "Nightly" ? (
-                <ChangeNetworkButton
-                  onClick={async (
-                    genesisHash: string,
-                    url: string | undefined
-                  ) => {
-                    try {
-                      const adapter = await getAdapter();
-                      await adapter.changeNetwork({ genesisHash, url });
-                      toast.success("Network changed!");
-                    } catch (err) {
-                      console.log(err);
-                      toast.error("Changing network failed");
-                    }
                   }}
-                />
-              ) : null}
-            </>
-          )}
+                  name="Sign Transaction"
+                ></ActionStarryButton>
+                <ActionStarryButton
+                  onClick={async () => {
+                    const signAllTransactions = async () => {
+                      const solana = getSolana();
+                      const adapter = await getAdapter();
+                      const ix = SystemProgram.transfer({
+                        fromPubkey: new PublicKey(publicKey),
+                        lamports: 1e6,
+                        toPubkey: new PublicKey(
+                          "C3XueH9USYvEioWKvn3TkApiAf2TjYd7Gpqi83h6cNXg"
+                        ),
+                      });
+                      const txs = [
+                        new Transaction().add(ix),
+                        new Transaction().add(ix).add(ix),
+                      ];
+
+                      const a = await solana.getLatestBlockhash();
+                      for (const tx of txs) {
+                        tx.recentBlockhash = a.blockhash;
+                        tx.feePayer = new PublicKey(publicKey);
+                      }
+
+                      const sendPromises: Promise<string>[] = [];
+                      const signedTxs = await adapter.signAllTransactions!(txs);
+                      for (const signedTx of signedTxs) {
+                        sendPromises.push(
+                          solana.sendRawTransaction(signedTx.serialize())
+                        );
+                      }
+
+                      toast.promise(Promise.all(sendPromises), {
+                        loading: "Sending Transactions...",
+                        success: (_) => {
+                          return `Transactions sent!`;
+                        },
+                        error: "Transactions failed to send!",
+                      });
+                    };
+                    toast.promise(signAllTransactions, {
+                      loading: "Signing Transactions...",
+                      success: (_) => {
+                        return `Transactions signed!`;
+                      },
+                      error: "Operation has been rejected!",
+                    });
+                  }}
+                  name="Sign All"
+                ></ActionStarryButton>
+                <ActionStarryButton
+                  onClick={async () => {
+                    const signMessage = async () => {
+                      const adapter = await getAdapter();
+                      const msg = new Uint8Array(
+                        Buffer.from("I love Nightly 🦊")
+                      );
+                      const signature = await adapter.signMessage(msg);
+
+                      // Verify the signature
+                      const signatureBuffer = signature;
+                      const publickeyBuffer = bs58.decode(publicKey);
+                      const isVerified = nacl.sign.detached.verify(
+                        msg,
+                        signatureBuffer,
+                        publickeyBuffer
+                      );
+                      // console.log(isVerified);
+                    };
+                    toast.promise(signMessage, {
+                      loading: "Signing message...",
+                      success: (_) => {
+                        return `Message signed!`;
+                      },
+                      error: "Operation has been rejected!",
+                    });
+                  }}
+                  name="Sign Message"
+                ></ActionStarryButton>
+                {/* Custom function to change network */}
+                {walletName === "Nightly" ? (
+                  <ChangeNetworkButton
+                    onClick={async (
+                      genesisHash: string,
+                      url: string | undefined
+                    ) => {
+                      try {
+                        const adapter = await getAdapter();
+                        await adapter.changeNetwork({ genesisHash, url });
+                        toast.success("Network changed!");
+                      } catch (err) {
+                        console.log(err);
+                        toast.error("Changing network failed");
+                      }
+                    }}
+                  />
+                ) : null}
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+      
+      {publicKey && (
+        <RegisterModal
+          isOpen={showRegisterModal}
+          onClose={() => setShowRegisterModal(false)}
+          walletAddress={publicKey}
+        />
+      )}
+    </>
   );
 };
 
