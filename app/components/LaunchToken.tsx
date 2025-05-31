@@ -430,7 +430,7 @@ export default function LaunchToken() {
               )}
             </button>
             <p className="mt-2 text-xs text-center text-gray-400">
-              Coin data (social links, banner, etc) can only be added now, and can't be changed or edited after creation
+              Coin data (social links, banner, etc) can only be added now, and can&apos;t be changed or edited after creation
             </p>
           </div>
         </div>
