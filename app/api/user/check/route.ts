@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
-// Prevent multiple instances of Prisma Client in development
-const prismaClientSingleton = () => {
-  return new PrismaClient()
+let prisma: PrismaClient | undefined
+
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient()
+} else {
+  if (!global.prisma) {
+    global.prisma = new PrismaClient()
+  }
+  prisma = global.prisma
 }
-
-type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>
-
-declare global {
-  var prisma: PrismaClientSingleton | undefined
-}
-
-const prisma = globalThis.prisma ?? prismaClientSingleton()
-
-if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,7 +23,7 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findFirst({
+    const user = await prisma!.user.findFirst({
       where: {
         pumpWallet: wallet
       }
