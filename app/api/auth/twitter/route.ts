@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateCodeVerifier, generateCodeChallenge } from '../../../utils/oauth';
+import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
 
 // Twitter OAuth Configuration
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID!;
@@ -9,9 +10,10 @@ export async function GET() {
   try {
     // Debug logging
     console.log('Twitter OAuth Config:', {
-      clientId: TWITTER_CLIENT_ID,
+      clientId: TWITTER_CLIENT_ID ? 'present' : 'missing',
       redirectUri: TWITTER_REDIRECT_URI,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      nodeEnv: process.env.NODE_ENV
     });
 
     if (!TWITTER_CLIENT_ID) {
@@ -34,28 +36,35 @@ export async function GET() {
     authUrl.searchParams.append('response_type', 'code');
     authUrl.searchParams.append('client_id', TWITTER_CLIENT_ID);
     authUrl.searchParams.append('redirect_uri', TWITTER_REDIRECT_URI);
-    authUrl.searchParams.append('scope', 'tweet.read users.read');
+    authUrl.searchParams.append('scope', 'tweet.read users.read offline.access');
     authUrl.searchParams.append('state', state);
     authUrl.searchParams.append('code_challenge', codeChallenge);
     authUrl.searchParams.append('code_challenge_method', 'S256');
 
     // Debug logging
-    console.log('Generated OAuth URL:', authUrl.toString());
+    console.log('OAuth Debug:', {
+      state,
+      codeVerifier: codeVerifier ? 'generated' : 'missing',
+      codeChallenge: codeChallenge ? 'generated' : 'missing',
+      authUrl: authUrl.toString()
+    });
 
     // Set cookies for verification
     const response = NextResponse.redirect(authUrl.toString());
-    response.cookies.set('twitter_oauth_state', state, {
+    
+    // Set cookies with more permissive settings for local development
+    const cookieOptions: Partial<ResponseCookie> = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'lax' as const : 'none' as const,
+      path: '/',
       maxAge: 60 * 10 // 10 minutes
-    });
-    response.cookies.set('twitter_code_verifier', codeVerifier, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 10 // 10 minutes
-    });
+    };
+
+    response.cookies.set('twitter_oauth_state', state, cookieOptions);
+    response.cookies.set('twitter_code_verifier', codeVerifier, cookieOptions);
+
+    console.log('Setting cookies with options:', cookieOptions);
 
     return response;
   } catch (error) {
