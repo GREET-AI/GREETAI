@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '../../generated/prisma'
+import { PrismaClient } from '@prisma/client'
 import crypto from 'crypto'
 
-const prisma = new PrismaClient()
+// Prevent multiple instances of Prisma Client in development
+const prismaClientSingleton = () => {
+  return new PrismaClient()
+}
+
+declare global {
+  var prisma: undefined | ReturnType<typeof prismaClientSingleton>
+}
+
+const prisma = globalThis.prisma ?? prismaClientSingleton()
+
+if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma
 
 // Generate a unique referral code
 function generateReferralCode(): string {
