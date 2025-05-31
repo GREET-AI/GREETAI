@@ -16,8 +16,8 @@
     "@playwright/test": "^1.52.0",
     "@react-three/drei": "^9.88.17",
     "@react-three/fiber": "^8.15.12",
-    "@solana/wallet-adapter-base": "^0.9.23",
-    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-base": "^0.9.26",
+    "@solana/wallet-adapter-react": "^0.15.38",
     "@solana/wallet-adapter-react-ui": "^0.9.34",
     "@solana/wallet-adapter-wallets": "^0.19.25",
     "@solana/web3.js": "^1.98.2",
@@ -36,6 +36,7 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
+    "@prisma/client": "^6.8.2",
     "@types/node": "20.6.2",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
@@ -44,6 +45,7 @@
     "eslint": "8.49.0",
     "eslint-config-next": "13.5.1",
     "playwright": "^1.52.0",
-    "postcss": "8.4.30"
+    "postcss": "8.4.30",
+    "prisma": "^6.8.2"
   }
 }
