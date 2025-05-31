@@ -17,7 +17,7 @@ const StickyHeader: React.FC = () => {
     const init = async () => {
       const adapter = await getAdapter();
 
-      adapter.on("connect", (publicKey) => {
+      adapter.on("connect", (publicKey: PublicKey) => {
         if (publicKey) {
           setPublicKey(publicKey.toString());
           setWalletName(adapter.selectedWallet?.name);
@@ -28,7 +28,7 @@ const StickyHeader: React.FC = () => {
         setPublicKey(undefined);
       });
 
-      adapter.on("change", (a) => {
+      adapter.on("change", (a: { accounts?: { address: string }[] }) => {
         if (!!a.accounts?.length) setPublicKey(a.accounts[0].address);
       });
 
