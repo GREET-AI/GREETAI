@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { WalletReadyState, WalletAccountError } from "@solana/wallet-adapter-base";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
 import { getAdapter } from "../misc/adapter";
@@ -12,7 +13,7 @@ import bs58 from "bs58";
 
 const StickyHeader: React.FC = () => {
   const [publicKey, setPublicKey] = React.useState<string | undefined>();
-  const [walletName, setWalletName] = React.useState<string | undefined>();
+  const [walletName, setWalletName] = React.useState<string | null>(null);
   useEffect(() => {
     const init = async () => {
       const adapter = await getAdapter();
@@ -20,16 +21,23 @@ const StickyHeader: React.FC = () => {
       adapter.on("connect", (publicKey: PublicKey) => {
         if (publicKey) {
           setPublicKey(publicKey.toString());
-          setWalletName(adapter.selectedWallet?.name);
+          setWalletName(adapter.selectedWallet?.name || null);
         }
       });
 
       adapter.on("disconnect", () => {
         setPublicKey(undefined);
+        setWalletName(null);
       });
 
-      adapter.on("change", (a: { accounts?: { address: string }[] }) => {
-        if (!!a.accounts?.length) setPublicKey(a.accounts[0].address);
+      adapter.on("change", () => {
+        if (adapter.connected && adapter.publicKey) {
+          setPublicKey(adapter.publicKey.toString());
+          setWalletName(adapter.selectedWallet?.name || null);
+        } else {
+          setPublicKey(undefined);
+          setWalletName(null);
+        }
       });
 
       if (await adapter.canEagerConnect()) {
