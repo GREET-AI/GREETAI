@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useWallet } from '@solana/wallet-adapter-react';
+import Image from 'next/image';
 
 // Technical SVG Icons
 const Icons = {
@@ -54,7 +55,13 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
       </button>
 
       <div className="p-4">
-        <img src="/GREET.png" alt="GREET" className="w-12 h-12 mx-auto mb-4 filter brightness-150" />
+        <Image 
+          src="/GREET.png" 
+          alt="GREET" 
+          width={48} 
+          height={48} 
+          className="w-12 h-12 mx-auto mb-4 filter brightness-150"
+        />
       </div>
 
       <nav className="flex-1">

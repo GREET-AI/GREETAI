@@ -9,6 +9,7 @@ import MatrixBackground from './components/MatrixBackground';
 import QuestSystem from './components/QuestSystem';
 import Sidebar from './components/Sidebar';
 import LaunchToken from './components/LaunchToken';
+import Image from 'next/image';
 
 // Typewriter-Komponente
 function Typewriter({ text, onDone }: { text: string, onDone?: () => void }) {
@@ -25,7 +26,7 @@ function Typewriter({ text, onDone }: { text: string, onDone?: () => void }) {
       }
     }, 18);
     return () => clearInterval(interval);
-  }, [text]);
+  }, [text, onDone]);
   return <span className="typewriter">{displayed}</span>;
 }
 
@@ -199,10 +200,22 @@ export default function Home() {
           {/* Chat window */}
           <div className="flex-1 w-[80vw] max-w-[1400px] mx-auto bg-black/50 border border-gray-800 rounded-lg p-12 mb-8 flex flex-col items-center justify-start relative">
             {/* GREET-Avatar links oben */}
-            <img src="/GREET.png" alt="GREET Character" className={`w-24 h-24 object-contain select-none absolute left-0 top-0 ml-0 mt-4 z-20${chatMessages.length && chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`} />
+            <Image 
+              src="/GREET.png" 
+              alt="GREET Character" 
+              width={96} 
+              height={96} 
+              className={`w-24 h-24 object-contain select-none absolute left-0 top-0 ml-0 mt-4 z-20${chatMessages.length && chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`}
+            />
             {/* User-Avatar rechts unten, direkt über dem Eingabefeld */}
             {isChatActive && (
-              <img src="/boy.png" alt="User Avatar" className={`w-20 h-20 object-contain select-none absolute right-0 bottom-[90px] mr-0 z-20${chatMessages.length && !chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`} />
+              <Image 
+                src="/boy.png" 
+                alt="User Avatar" 
+                width={80} 
+                height={80} 
+                className={`w-20 h-20 object-contain select-none absolute right-0 bottom-[90px] mr-0 z-20${chatMessages.length && !chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`}
+              />
             )}
             {/* Nachrichtenbereich, Padding links und rechts für Avatare */}
             <div className="w-full max-w-5xl flex-1 flex flex-col h-[320px] overflow-y-auto bg-transparent px-2 pl-0 pr-0 custom-scrollbar" style={{ minHeight: 0 }}>

@@ -58,7 +58,7 @@ const GreetBot: React.FC = () => {
       ];
       addMessage(welcomeMessage, 'greet');
     }
-  }, [isOpen]);
+  }, [isOpen, messages.length]);
 
   const addMessage = (text: string, sender: 'user' | 'greet') => {
     setMessages(prev => [...prev, { text, sender, timestamp: new Date() }]);

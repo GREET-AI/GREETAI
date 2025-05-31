@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Keypair, Connection, VersionedTransaction } from '@solana/web3.js';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 // Helper function for logging
 const logStep = (step: string, data?: any) => {
@@ -446,7 +447,13 @@ export default function LaunchToken() {
             {/* Banner Preview */}
             <div className="w-full h-[100px] bg-black/30 rounded-lg overflow-hidden mb-4">
               {bannerPreviewUrl ? (
-                <img src={bannerPreviewUrl} alt="Banner Preview" className="w-full h-full object-cover" />
+                <Image 
+                  src={bannerPreviewUrl} 
+                  alt="Banner Preview" 
+                  width={300} 
+                  height={100} 
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
                   <span>No banner image</span>
@@ -457,7 +464,13 @@ export default function LaunchToken() {
             {/* Token Image Preview */}
             <div className="aspect-square w-full bg-black/30 rounded-lg overflow-hidden mb-4">
               {imagePreviewUrl ? (
-                <img src={imagePreviewUrl} alt="Token Preview" className="w-full h-full object-cover" />
+                <Image 
+                  src={imagePreviewUrl} 
+                  alt="Token Preview" 
+                  width={300} 
+                  height={300} 
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-500">
                   <span>No image selected</span>
