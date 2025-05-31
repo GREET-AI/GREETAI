@@ -10,6 +10,7 @@ import QuestSystem from './components/QuestSystem';
 import Sidebar from './components/Sidebar';
 import LaunchToken from './components/LaunchToken';
 import Image from 'next/image';
+import StickyHeader from './components/StickyHeader';
 
 // Typewriter-Komponente
 function Typewriter({ text, onDone }: { text: string, onDone?: () => void }) {
@@ -330,10 +331,11 @@ export default function Home() {
 
   // Dashboard (Logged In)
   return (
-    <main className="flex min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white">
+      <StickyHeader />
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
-      <div className="flex-1 p-8 ml-[240px] overflow-y-auto h-screen">
+      <div className="pl-[240px] p-8">
         {activeSection === 'launch' && <LaunchToken />}
         {activeSection === 'quests' && <QuestSystem />}
         
