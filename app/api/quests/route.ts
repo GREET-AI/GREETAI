@@ -1,5 +1,29 @@
 import { NextResponse } from 'next/server';
-import { TwitterService } from '@/app/services/twitter';
+
+// Mock-Daten für die Entwicklung
+const mockUserProfiles: Record<string, any> = {
+  default: {
+    username: 'default_user',
+    followersCount: 1500,
+    hasBlueBadge: false,
+    joinDate: new Date('2023-01-01')
+  }
+};
+
+const mockQuestProgress: Record<string, any> = {
+  mention_10k: {
+    questId: 'mention_10k',
+    completed: false,
+    progress: 1500,
+    requiredProgress: 10000
+  },
+  blue_badge: {
+    questId: 'blue_badge',
+    completed: false,
+    progress: 0,
+    requiredProgress: 1
+  }
+};
 
 export async function POST(request: Request) {
   try {
@@ -7,27 +31,43 @@ export async function POST(request: Request) {
 
     switch (action) {
       case 'get_profile':
-        const profile = await TwitterService.getUserProfile(username);
-        return NextResponse.json({ profile });
+        // Mock Profildaten zurückgeben
+        return NextResponse.json({ 
+          profile: mockUserProfiles[username] || mockUserProfiles.default 
+        });
 
       case 'check_mention':
-        const { mentioned } = data;
-        const mentionResult = await TwitterService.checkMentionQuest(username, mentioned);
-        return NextResponse.json({ success: mentionResult });
+        // Mock: 50% Chance auf erfolgreiche Mention
+        return NextResponse.json({ 
+          success: Math.random() > 0.5 
+        });
 
       case 'check_community':
-        const { communityId } = data;
-        const communityResult = await TwitterService.checkCommunityJoinQuest(username, communityId);
-        return NextResponse.json({ success: communityResult });
+        // Mock: Community-Check ist immer erfolgreich
+        return NextResponse.json({ 
+          success: true 
+        });
 
       case 'track_referral':
-        const { referred } = data;
-        const referralResult = await TwitterService.trackReferralChain(username, referred);
-        return NextResponse.json({ referral: referralResult });
+        // Mock Referral-Daten
+        return NextResponse.json({ 
+          referral: {
+            directReferral: true,
+            indirectReferral: false,
+            chainLength: 1
+          }
+        });
 
       case 'get_progress':
-        const progress = await TwitterService.getQuestProgress(username, questId);
-        return NextResponse.json({ progress });
+        // Mock Quest-Fortschritt zurückgeben
+        return NextResponse.json({ 
+          progress: mockQuestProgress[questId] || {
+            questId,
+            completed: false,
+            progress: 0,
+            requiredProgress: 100
+          }
+        });
 
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
