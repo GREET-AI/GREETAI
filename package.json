@@ -12,6 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nightlylabs/wallet-selector-solana": "^0.3.14",
     "@playwright/test": "^1.52.0",
     "@react-three/drei": "^9.88.17",
     "@react-three/fiber": "^8.15.12",
