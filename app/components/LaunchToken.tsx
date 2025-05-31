@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Keypair, Connection, VersionedTransaction } from '@solana/web3.js';
+import { WalletContextState } from '@solana/wallet-adapter-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
@@ -10,7 +11,7 @@ const logStep = (step: string, data?: any) => {
 };
 
 export default function LaunchToken() {
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signAndSendTransaction } = useWallet();
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
   const [tokenImage, setTokenImage] = useState<File | null>(null);
@@ -53,11 +54,11 @@ export default function LaunchToken() {
   const handleLaunch = async () => {
     logStep('Started', { tokenName, tokenSymbol });
     
-    if (!publicKey || !tokenImage || !signTransaction) {
+    if (!publicKey || !tokenImage || !signAndSendTransaction) {
       const error = {
         wallet: !publicKey ? 'Not connected' : 'Connected',
         image: !tokenImage ? 'Missing' : 'Present',
-        signTransaction: !signTransaction ? 'Not available' : 'Available'
+        signAndSendTransaction: !signAndSendTransaction ? 'Not available' : 'Available'
       };
       logStep('Validation Failed', error);
       toast.error('Please connect your wallet and select a token image');
@@ -170,35 +171,13 @@ export default function LaunchToken() {
         
         const signToastId = toast.loading('Please sign the transaction...');
         
-        // Sign with mint keypair
-        tx.sign([mintKeypair]);
-        logStep('Signed with Mint Keypair');
-
-        // Sign with wallet
-        tx = await signTransaction(tx);
-        logStep('Signed with Wallet');
-        
-        toast.dismiss(signToastId);
-        const broadcastToastId = toast.loading('Broadcasting transaction...');
-        
-        // Send transaction to blockchain
-        const web3Connection = new Connection(
-          "https://rpc.helius.xyz/?api-key=1aa1b801-10ea-47eb-80b7-ca3917b2bca7",  // Using Helius endpoint
-          {
-            commitment: 'confirmed',
-            confirmTransactionInitialTimeout: 60000
-          }
-        );
-        
         try {
-          const signature = await web3Connection.sendTransaction(tx, {
-            skipPreflight: false,
-            maxRetries: 3
-          });
+          // Sign and send transaction in one step using Phantom's recommended method
+          const signature = await signAndSendTransaction(tx);
           
-          toast.dismiss(broadcastToastId);
+          toast.dismiss(signToastId);
           
-          logStep('Transaction Broadcasted', {
+          logStep('Transaction Signed and Sent', {
             signature,
             explorerUrl: `https://solscan.io/tx/${signature}`
           });
@@ -210,11 +189,12 @@ export default function LaunchToken() {
               onClick: () => window.open(`https://solscan.io/tx/${signature}`, '_blank')
             }
           });
-        } catch (sendError) {
-          logStep('Transaction Broadcast Failed', {
-            error: sendError instanceof Error ? sendError.message : 'Unknown error'
+        } catch (signError) {
+          toast.dismiss(signToastId);
+          logStep('Transaction Sign Failed', {
+            error: signError instanceof Error ? signError.message : 'Unknown error'
           });
-          throw new Error(`Failed to broadcast transaction: ${sendError instanceof Error ? sendError.message : 'Unknown error'}`);
+          throw new Error(`Failed to sign transaction: ${signError instanceof Error ? signError.message : 'Unknown error'}`);
         }
       } else {
         logStep('Transaction Creation Failed', {
