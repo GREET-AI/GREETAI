@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { useConnection } from '@solana/wallet-adapter-react';
 import { Keypair, Connection, VersionedTransaction } from '@solana/web3.js';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { toast } from 'sonner';
@@ -11,7 +12,8 @@ const logStep = (step: string, data?: any) => {
 };
 
 export default function LaunchToken() {
-  const { publicKey, signAndSendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
+  const { connection } = useConnection();
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
   const [tokenImage, setTokenImage] = useState<File | null>(null);
@@ -54,11 +56,11 @@ export default function LaunchToken() {
   const handleLaunch = async () => {
     logStep('Started', { tokenName, tokenSymbol });
     
-    if (!publicKey || !tokenImage || !signAndSendTransaction) {
+    if (!publicKey || !tokenImage || !signTransaction) {
       const error = {
         wallet: !publicKey ? 'Not connected' : 'Connected',
         image: !tokenImage ? 'Missing' : 'Present',
-        signAndSendTransaction: !signAndSendTransaction ? 'Not available' : 'Available'
+        signTransaction: !signTransaction ? 'Not available' : 'Available'
       };
       logStep('Validation Failed', error);
       toast.error('Please connect your wallet and select a token image');
@@ -172,15 +174,30 @@ export default function LaunchToken() {
         const signToastId = toast.loading('Please sign the transaction...');
         
         try {
-          // Sign and send transaction in one step using Phantom's recommended method
-          const signature = await signAndSendTransaction(tx);
+          // Sign with mint keypair first
+          tx.sign([mintKeypair]);
+          logStep('Signed with Mint Keypair');
+
+          // Then sign with wallet
+          const signedTx = await signTransaction(tx);
+          logStep('Signed with Wallet');
+
+          // Send the signed transaction
+          const signature = await connection.sendRawTransaction(signedTx.serialize());
           
           toast.dismiss(signToastId);
           
-          logStep('Transaction Signed and Sent', {
+          logStep('Transaction Sent', {
             signature,
             explorerUrl: `https://solscan.io/tx/${signature}`
           });
+
+          // Wait for confirmation
+          const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+          
+          if (confirmation.value.err) {
+            throw new Error('Transaction failed to confirm');
+          }
 
           toast.success('Token created successfully!', {
             description: `Transaction: ${signature}`,
@@ -191,10 +208,10 @@ export default function LaunchToken() {
           });
         } catch (signError) {
           toast.dismiss(signToastId);
-          logStep('Transaction Sign Failed', {
+          logStep('Transaction Failed', {
             error: signError instanceof Error ? signError.message : 'Unknown error'
           });
-          throw new Error(`Failed to sign transaction: ${signError instanceof Error ? signError.message : 'Unknown error'}`);
+          throw new Error(`Transaction failed: ${signError instanceof Error ? signError.message : 'Unknown error'}`);
         }
       } else {
         logStep('Transaction Creation Failed', {
