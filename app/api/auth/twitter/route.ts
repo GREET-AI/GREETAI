@@ -7,6 +7,21 @@ const TWITTER_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL + '/api/auth/twitte
 
 export async function GET() {
   try {
+    // Debug logging
+    console.log('Twitter OAuth Config:', {
+      clientId: TWITTER_CLIENT_ID,
+      redirectUri: TWITTER_REDIRECT_URI,
+      appUrl: process.env.NEXT_PUBLIC_APP_URL
+    });
+
+    if (!TWITTER_CLIENT_ID) {
+      throw new Error('TWITTER_CLIENT_ID is not defined');
+    }
+
+    if (!process.env.NEXT_PUBLIC_APP_URL) {
+      throw new Error('NEXT_PUBLIC_APP_URL is not defined');
+    }
+
     // Generate PKCE values
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -23,6 +38,9 @@ export async function GET() {
     authUrl.searchParams.append('state', state);
     authUrl.searchParams.append('code_challenge', codeChallenge);
     authUrl.searchParams.append('code_challenge_method', 'S256');
+
+    // Debug logging
+    console.log('Generated OAuth URL:', authUrl.toString());
 
     // Set cookies for verification
     const response = NextResponse.redirect(authUrl.toString());
@@ -42,6 +60,6 @@ export async function GET() {
     return response;
   } catch (error) {
     console.error('Twitter OAuth Error:', error);
-    return NextResponse.json({ error: 'Failed to initialize Twitter OAuth' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to initialize Twitter OAuth', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 } 
