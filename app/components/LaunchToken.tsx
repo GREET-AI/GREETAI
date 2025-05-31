@@ -101,8 +101,8 @@ export default function LaunchToken() {
 
       const uploadToastId = toast.loading('Uploading token metadata...');
 
-      // Upload metadata to IPFS
-      const metadataResponse = await fetch("https://pump.fun/api/ipfs", {
+      // Upload metadata to IPFS through our proxy
+      const metadataResponse = await fetch("/api/ipfs", {
         method: "POST",
         body: formData,
       });
@@ -134,8 +134,8 @@ export default function LaunchToken() {
 
       const createTxToastId = toast.loading('Creating token transaction...');
 
-      // Send the create transaction
-      const response = await fetch("https://pumpportal.fun/api/trade-local", {
+      // Send the create transaction through our proxy
+      const response = await fetch("/api/trade", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
