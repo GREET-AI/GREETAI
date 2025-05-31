@@ -3,15 +3,14 @@ import '@solana/wallet-adapter-react-ui/styles.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Head from 'next/head'
-import { Providers } from './providers'
 import { Toaster } from 'sonner'
-import WalletContextProvider from './providers/WalletProvider'
+import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GREET - Send Spooky Greetings on Solana',
-  description: 'Send mysterious and spooky greetings to your friends on Solana',
+  title: 'GREET',
+  description: 'GREET - The Social Token Platform',
   twitter: {
     title: 'Solana Template App',
     description:
@@ -34,9 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en'>
       <body className={inter.className}>
-        <WalletContextProvider>
-          <Providers>{children}</Providers>
-        </WalletContextProvider>
+        <Providers>{children}</Providers>
         <Toaster richColors position="bottom-right" />
       </body>
     </html>
