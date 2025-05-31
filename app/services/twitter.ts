@@ -1,4 +1,4 @@
-import { TwitterApi } from 'twitter-api-v2';
+import { TwitterApi, TweetV2, UserV2 } from 'twitter-api-v2';
 
 // Twitter API Client
 const client = new TwitterApi({
@@ -65,13 +65,15 @@ export class TwitterService {
         max_results: 100,
       });
 
+      const tweetData = tweets.data.data || [];
+
       return {
-        totalGreets: tweets.data.length,
-        engagement: tweets.data.reduce((acc, tweet) => {
+        totalGreets: tweetData.length,
+        engagement: tweetData.reduce((acc, tweet) => {
           return acc + (tweet.public_metrics?.like_count || 0) + 
                        (tweet.public_metrics?.retweet_count || 0);
         }, 0),
-        lastGreet: tweets.data[0]?.created_at,
+        lastGreet: tweetData[0]?.created_at,
       };
     } catch (error) {
       console.error('Error getting greet stats:', error);
@@ -104,7 +106,9 @@ export class TwitterService {
         max_results: 100,
       });
 
-      return tweets.data.some(tweet => 
+      const tweetData = tweets.data.data || [];
+
+      return tweetData.some((tweet: TweetV2) => 
         tweet.text.includes(`@${mentioned}`) && 
         new Date(tweet.created_at!).getTime() > Date.now() - 24 * 60 * 60 * 1000 // Within last 24h
       );
@@ -117,10 +121,9 @@ export class TwitterService {
   static async checkCommunityJoinQuest(username: string, communityId: string): Promise<boolean> {
     try {
       // Note: This requires additional Twitter API endpoints that might need to be requested
-      const community = await client.v2.community(communityId);
-      const members = await client.v2.communityMembers(communityId);
-      
-      return members.data.some(member => member.username === username);
+      // Diese Methode ist noch nicht implementiert in twitter-api-v2
+      // Wir sollten sie entweder entfernen oder anders implementieren
+      return false;
     } catch (error) {
       console.error('Error checking community join quest:', error);
       throw error;
