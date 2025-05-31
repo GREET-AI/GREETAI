@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google'
 import Head from 'next/head'
 import { Providers } from './providers'
 import { Toaster } from 'sonner'
+import WalletContextProvider from './providers/WalletProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -33,7 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en'>
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <WalletContextProvider>
+          <Providers>{children}</Providers>
+        </WalletContextProvider>
         <Toaster richColors position="bottom-right" />
       </body>
     </html>
