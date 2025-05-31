@@ -139,7 +139,7 @@ export default function RegisterModal({ isOpen, onClose, walletAddress }: Regist
               />
               {isTwitterConnected ? 'Connected with X' : 'Connect with X'}
             </button>
-            <p className="mt-2 text-xs text-green-500/60">We'll never post without your permission</p>
+            <p className="mt-2 text-xs text-green-500/60">We&apos;ll never post without your permission</p>
           </div>
           <div>
             <label className="block text-green-500 font-chippunk mb-2">
