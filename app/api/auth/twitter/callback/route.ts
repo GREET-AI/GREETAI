@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     const userData = await userResponse.json();
 
-    // Clear OAuth cookies
+    // Clear OAuth cookies and return success
     const response = new NextResponse(
       `<html><body><script>
         window.opener.postMessage({
@@ -86,54 +86,6 @@ export async function GET(request: NextRequest) {
         window.close();
       </script></body></html>`,
       { headers: { 'Content-Type': 'text/html' } }
-    );
-  }
-}
-
-export async function GET_popup(request: Request) {
-  try {
-    // Handle OAuth callback logic here
-    
-    // Return HTML that sends a message to the opener and closes itself
-    return new NextResponse(
-      `
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage({ type: 'TWITTER_AUTH_SUCCESS' }, '*');
-              window.close();
-            }
-          </script>
-        </body>
-      </html>
-      `,
-      {
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      }
-    );
-  } catch (error) {
-    console.error('Twitter callback error:', error);
-    return new NextResponse(
-      `
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage({ type: 'TWITTER_AUTH_ERROR' }, '*');
-              window.close();
-            }
-          </script>
-        </body>
-      </html>
-      `,
-      {
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      }
     );
   }
 } 
