@@ -29,11 +29,16 @@ body,
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  overflow: hidden;
 }
 
 body {
   font-family: 'Inter', sans-serif;
+  background-color: #000000;
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
