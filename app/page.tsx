@@ -340,7 +340,7 @@ export default function Home() {
         {activeSection === 'quests' && <QuestSystem />}
         
         {activeSection === 'send' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
+          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
             <h2 className="text-2xl font-bold mb-4">Send Greet</h2>
             <div className="space-y-4">
               <input
@@ -367,7 +367,7 @@ export default function Home() {
         )}
 
         {activeSection === 'history' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
+          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
             <h2 className="text-2xl font-bold mb-4">Recent Greets</h2>
             <div className="space-y-2">
               {greetHistory.map((greet, index) => (
@@ -380,7 +380,7 @@ export default function Home() {
         )}
 
         {activeSection === 'holdings' && (
-          <div className="space-y-8">
+          <div className="space-y-8 mt-[96px]">
             <div className="bg-black/50 border border-green-500 rounded-lg p-6">
               <h2 className="text-2xl font-bold mb-4">Your Holdings</h2>
               <div className="text-green-500">
@@ -403,7 +403,7 @@ export default function Home() {
         )}
 
         {activeSection === 'stats' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
+          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
             <h2 className="text-2xl font-bold mb-4">Your Stats</h2>
             <div className="grid grid-cols-2 gap-4 text-green-500">
               <div className="space-y-2">
@@ -431,7 +431,7 @@ export default function Home() {
         )}
 
         {activeSection === 'leaderboard' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
+          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
             <h2 className="text-2xl font-bold mb-4">Top Greeters</h2>
             <div className="space-y-2">
               {topGreeters.map((greeter, index) => (
