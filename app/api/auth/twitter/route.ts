@@ -1,35 +1,75 @@
 import { NextResponse } from 'next/server';
 import { generateCodeVerifier, generateCodeChallenge } from '../../../utils/oauth';
 import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
+import { NextRequest } from 'next/server';
 
 // Twitter OAuth Configuration
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID!;
 const TWITTER_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL + '/api/auth/twitter/callback';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    // Debug logging
-    console.log('Twitter OAuth Config:', {
-      clientId: TWITTER_CLIENT_ID ? 'present' : 'missing',
-      redirectUri: TWITTER_REDIRECT_URI,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL,
-      nodeEnv: process.env.NODE_ENV
+    // Get and decode wallet address from query params
+    const encodedWallet = request.nextUrl.searchParams.get('wallet');
+    
+    console.log('Twitter OAuth Request:', {
+      url: request.nextUrl.toString(),
+      encodedWallet,
+      headers: Object.fromEntries(request.headers.entries())
     });
+    
+    if (!encodedWallet) {
+      console.error('Missing wallet address in request:', request.nextUrl.toString());
+      return NextResponse.json(
+        { 
+          error: 'Wallet address is required',
+          details: 'The wallet parameter is missing from the request'
+        },
+        { status: 400 }
+      );
+    }
+
+    const walletAddress = decodeURIComponent(encodedWallet);
+    
+    if (!walletAddress) {
+      console.error('Invalid wallet address after decoding:', encodedWallet);
+      return NextResponse.json(
+        { 
+          error: 'Invalid wallet address',
+          details: 'Could not decode the wallet address'
+        },
+        { status: 400 }
+      );
+    }
 
     if (!TWITTER_CLIENT_ID) {
-      throw new Error('TWITTER_CLIENT_ID is not defined');
+      console.error('Missing TWITTER_CLIENT_ID environment variable');
+      return NextResponse.json(
+        { 
+          error: 'Configuration error',
+          details: 'Twitter Client ID is not configured'
+        },
+        { status: 500 }
+      );
     }
 
     if (!process.env.NEXT_PUBLIC_APP_URL) {
-      throw new Error('NEXT_PUBLIC_APP_URL is not defined');
+      console.error('Missing NEXT_PUBLIC_APP_URL environment variable');
+      return NextResponse.json(
+        { 
+          error: 'Configuration error',
+          details: 'App URL is not configured'
+        },
+        { status: 500 }
+      );
     }
 
     // Generate PKCE values
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     
-    // Generate state
-    const state = crypto.randomUUID();
+    // Generate state with wallet address
+    const state = `${crypto.randomUUID()}:${walletAddress}`;
 
     // Build Twitter OAuth URL
     const authUrl = new URL('https://twitter.com/i/oauth2/authorize');
@@ -42,33 +82,35 @@ export async function GET() {
     authUrl.searchParams.append('code_challenge_method', 'S256');
 
     // Debug logging
-    console.log('OAuth Debug:', {
-      state,
-      codeVerifier: codeVerifier ? 'generated' : 'missing',
-      codeChallenge: codeChallenge ? 'generated' : 'missing',
-      authUrl: authUrl.toString()
+    console.log('Twitter OAuth Request:', {
+      walletAddress,
+      state: state.substring(0, 20) + '...',
+      redirectUri: TWITTER_REDIRECT_URI
     });
 
     // Set cookies for verification
     const response = NextResponse.redirect(authUrl.toString());
     
-    // Set cookies with more permissive settings for local development
     const cookieOptions: Partial<ResponseCookie> = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'lax' as const : 'none' as const,
+      secure: true,
+      sameSite: 'none' as const,
       path: '/',
-      maxAge: 60 * 10 // 10 minutes
+      maxAge: 60 * 10, // 10 minutes
     };
 
     response.cookies.set('twitter_oauth_state', state, cookieOptions);
     response.cookies.set('twitter_code_verifier', codeVerifier, cookieOptions);
 
-    console.log('Setting cookies with options:', cookieOptions);
-
     return response;
   } catch (error) {
     console.error('Twitter OAuth Error:', error);
-    return NextResponse.json({ error: 'Failed to initialize Twitter OAuth', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    return NextResponse.json(
+      { 
+        error: 'Failed to initialize Twitter OAuth',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
   }
 } 

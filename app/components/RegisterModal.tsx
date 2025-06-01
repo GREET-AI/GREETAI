@@ -44,8 +44,14 @@ export default function RegisterModal({ isOpen, onClose, walletAddress }: Regist
       const left = window.screenX + (window.outerWidth - width) / 2;
       const top = window.screenY + (window.outerHeight - height) / 2;
       
+      // Encode the wallet address to handle special characters
+      const encodedWallet = encodeURIComponent(walletAddress);
+      const authUrl = `/api/auth/twitter?wallet=${encodedWallet}`;
+      
+      console.log('Opening Twitter auth with URL:', authUrl);
+      
       window.open(
-        '/api/auth/twitter',
+        authUrl,
         'Connect with X',
         `width=${width},height=${height},left=${left},top=${top},popup=true`
       );
@@ -102,19 +108,19 @@ export default function RegisterModal({ isOpen, onClose, walletAddress }: Regist
           <ul className="space-y-2 text-sm text-green-300/80">
             <li className="flex items-center gap-2">
               <span className="text-green-500">•</span>
-              Get 100 GREET tokens for connecting your X account
+              Get 100 GREET tokens instantly for connecting
             </li>
             <li className="flex items-center gap-2">
               <span className="text-green-500">•</span>
-              Participate in exclusive token launches
+              Launch your own tokens with zero fees
             </li>
             <li className="flex items-center gap-2">
               <span className="text-green-500">•</span>
-              Earn rewards for community engagement
+              Earn rewards through community engagement
             </li>
             <li className="flex items-center gap-2">
               <span className="text-green-500">•</span>
-              Access special quests and missions
+              Access exclusive quests & airdrops
             </li>
           </ul>
         </div>

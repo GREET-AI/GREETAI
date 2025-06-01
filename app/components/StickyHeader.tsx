@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import RegisterModal from "./RegisterModal";
 import ClientWalletButton from "./ClientWalletButton";
+import UserProfile from "./UserProfile";
 import Image from "next/image";
 
 const StickyHeader: React.FC = () => {
@@ -49,7 +50,11 @@ const StickyHeader: React.FC = () => {
             />
           </div>
           <div className="flex items-center space-x-4">
-            <ClientWalletButton />
+            {publicKey ? (
+              <UserProfile walletAddress={publicKey.toString()} />
+            ) : (
+              <ClientWalletButton />
+            )}
           </div>
         </div>
       </header>
