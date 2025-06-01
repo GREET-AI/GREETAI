@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang='en'>
-      <body className={`${inter.className} min-h-screen bg-black text-white pt-24`}>
+      <body className={`${inter.className} min-h-screen bg-black text-white`}>
         <Providers>{children}</Providers>
         <Toaster richColors position="bottom-right" />
       </body>
