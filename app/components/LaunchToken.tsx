@@ -237,7 +237,7 @@ export default function LaunchToken() {
   };
 
   return (
-    <div className="container mx-auto px-4 pt-24">
+    <div className="container mx-auto px-4 mt-[72px]">
       <div className="flex gap-8">
         <div className="flex-1">
           <div className="bg-[#0a0a0a] border border-green-500/20 rounded-lg overflow-hidden backdrop-blur-sm">
