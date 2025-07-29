@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useConnection } from '@solana/wallet-adapter-react';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 export default function LaunchToken() {
   const { publicKey, signTransaction } = useWallet();
@@ -119,7 +120,7 @@ export default function LaunchToken() {
               <div className="border-2 border-dashed border-gray-800 rounded-lg p-4 text-center">
                 {imagePreviewUrl ? (
                   <div className="space-y-2">
-                    <img src={imagePreviewUrl} alt="Preview" className="w-16 h-16 mx-auto rounded" />
+                    <Image src={imagePreviewUrl} alt="Preview" width={64} height={64} className="w-16 h-16 mx-auto rounded" />
                     <p className="text-sm text-gray-400">{tokenImage?.name}</p>
                   </div>
                 ) : (

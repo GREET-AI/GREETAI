@@ -346,7 +346,7 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center gap-4 mb-8">
             <div className="text-center mb-4">
               <h1 className="text-4xl md:text-6xl font-chippunk text-green-500 mb-2">GREET</h1>
-              <p className="text-green-400 text-lg md:text-xl">Solana's favorite AI Launchpad</p>
+              <p className="text-green-400 text-lg md:text-xl">Solana&apos;s favorite AI Launchpad</p>
             </div>
             <div className="flex items-center gap-4">
               <ClientWalletButton className="btn-matrix" />
