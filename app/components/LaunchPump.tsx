@@ -51,29 +51,19 @@ const LaunchPump = () => {
     <div className="min-h-screen bg-gray-900 text-white p-6">
       {/* Hero Section - Pump.fun Style */}
       <div className="max-w-7xl mx-auto mb-8">
-        <div className="relative overflow-hidden rounded-2xl border border-green-300/20 shadow-2xl">
-          {/* Background Image */}
-          <Image
-            src="/pumpbanner.png"
-            alt="Pump.fun Banner"
-            fill
-            className="object-cover"
-            priority
-          />
-          {/* Overlay for better text readability */}
-          <div className="absolute inset-0 bg-black/30"></div>
+        <div className="relative overflow-hidden rounded-2xl border border-green-300/20 shadow-2xl bg-gradient-to-r from-green-600/20 via-purple-600/20 to-green-600/20">
+          {/* Animated background elements */}
+          <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-purple-500/5 animate-pulse"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl animate-ping"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl animate-pulse"></div>
           
           <div className="relative px-8 py-16 flex flex-col items-center text-center gap-6">
             {/* Logo and Title - Side by Side */}
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <Image
-                  src="/pumplogo.png"
-                  alt="Pump.fun Logo"
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 rounded-full"
-                />
+                <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
+                  <span className="text-2xl font-bold text-white">⚡</span>
+                </div>
               </div>
               <div>
                 <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
@@ -109,8 +99,11 @@ const LaunchPump = () => {
               >
                 🚀 Launch Your Token
               </button>
-              <button className="px-10 py-4 bg-green-600 text-white font-bold rounded-xl text-lg hover:bg-green-500 transition-colors">
-                📊 View Analytics
+              <button 
+                onClick={() => window.open('https://pump.fun', '_blank')}
+                className="px-10 py-4 bg-green-600 text-white font-bold rounded-xl text-lg hover:bg-green-500 transition-colors"
+              >
+                🌐 Visit pump.fun
               </button>
             </div>
           </div>

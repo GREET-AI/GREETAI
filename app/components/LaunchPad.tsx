@@ -291,26 +291,18 @@ const LaunchPad = () => {
           </div>
         ) : (
           // LetsBonk Hero
-          <div className="relative overflow-hidden rounded-2xl border border-orange-300/20 shadow-2xl">
-            <Image
-              src="/BANNERS.png"
-              alt="LetsBonk Banner"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-black/30"></div>
+          <div className="relative overflow-hidden rounded-2xl border border-orange-300/20 shadow-2xl bg-gradient-to-r from-orange-600/20 via-red-600/20 to-orange-600/20">
+            {/* Animated background elements */}
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5 animate-pulse"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-3xl animate-ping"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-red-500/10 rounded-full blur-2xl animate-pulse"></div>
             
             <div className="relative px-8 py-16 flex flex-col items-center text-center gap-6">
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-                  <Image
-                    src="/letsbonk.png"
-                    alt="LetsBonk Logo"
-                    width={64}
-                    height={64}
-                    className="w-16 h-16 rounded-full"
-                  />
+                  <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center">
+                    <span className="text-2xl font-bold text-white">🔥</span>
+                  </div>
                 </div>
                 <div>
                   <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
