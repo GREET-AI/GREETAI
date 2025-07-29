@@ -417,6 +417,11 @@ export default function QuestSystem() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             className="bg-green-800/30 border border-green-600/50 rounded-lg p-4 text-center hover:bg-green-700/40 transition-colors"
+            onClick={() => {
+              // Navigate to GREET section
+              localStorage.setItem('greetActiveSection', 'send');
+              window.location.href = '/';
+            }}
           >
             <div className="mb-2 flex justify-center">
               <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -430,6 +435,10 @@ export default function QuestSystem() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             className="bg-green-700/25 border border-green-500/40 rounded-lg p-4 text-center hover:bg-green-600/35 transition-colors"
+            onClick={() => {
+              // Show referral info modal or navigate to referral section
+              alert('Referral system coming soon! Invite friends to earn bonus GREET tokens! 🚀');
+            }}
           >
             <div className="mb-2 flex justify-center">
               <Image 
@@ -447,6 +456,11 @@ export default function QuestSystem() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             className="bg-green-600/20 border border-green-400/30 rounded-lg p-4 text-center hover:bg-green-500/25 transition-colors"
+            onClick={() => {
+              // Navigate to Launchpad section
+              localStorage.setItem('greetActiveSection', 'launchpad');
+              window.location.href = '/';
+            }}
           >
             <div className="mb-2 flex justify-center">
               <Image 
