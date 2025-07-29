@@ -18,6 +18,7 @@ import PageGreetGhost from './components/PageGreetGhost';
 import LiveGreetHistory from './components/LiveGreetHistory';
 import HoldingsAndStats from './components/HoldingsAndStats';
 import Leaderboard from './components/Leaderboard';
+import HowItWorks from './components/HowItWorks';
 
 // Typewriter-Komponente
 function Typewriter({ text, onDone }: { text: string, onDone?: () => void }) {
@@ -413,6 +414,8 @@ export default function Home() {
         {activeSection === 'holdings' && <HoldingsAndStats />}
 
         {activeSection === 'leaderboard' && <Leaderboard />}
+        
+        {activeSection === 'howitworks' && <HowItWorks />}
       </div>
       
       {/* Support Ghost - appears on each page */}
