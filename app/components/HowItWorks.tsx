@@ -6,63 +6,106 @@ import { useState } from 'react';
 const HowItWorks = () => {
   const [activeTab, setActiveTab] = useState('commandments');
 
+  const coreConcept = {
+    title: "THE FIRST SELF-SHILLING LAUNCHPAD",
+    subtitle: "A Revolution in Token Economics",
+    description: "What if a platform could promote itself? What if every success story became fuel for the next? GREET is the world's first self-sustaining launchpad ecosystem.",
+    vision: "We've created something that has never existed before: a platform that grows stronger with every token launch, where success breeds success in an endless virtuous cycle.",
+    mechanism: {
+      title: "The GREET Flywheel",
+      description: "This is how we've broken the traditional launchpad model. Instead of extracting value, we create it. Instead of competing, we collaborate. Instead of diminishing returns, we have exponential growth.",
+      steps: [
+        {
+          phase: "LAUNCH",
+          title: "Token Creation",
+          description: "Anyone can launch a token through GREET AI. No barriers, no gatekeepers. Just vision and execution.",
+          detail: "Every launch generates transaction fees that power the entire ecosystem."
+        },
+        {
+          phase: "PROMOTE", 
+          title: "Community Activation",
+          description: "The GREET community promotes every launched token. Not just the creators, but everyone who believes in the project.",
+          detail: "This creates unprecedented marketing power and genuine community engagement."
+        },
+        {
+          phase: "GROW",
+          title: "Token Success",
+          description: "As tokens succeed, trading volume increases. More volume means more fees for GREET.",
+          detail: "Success stories become case studies that attract more creators and investors."
+        },
+        {
+          phase: "REWARD",
+          title: "Value Distribution",
+          description: "GREET uses collected fees to buy back GREET tokens from the market.",
+          detail: "These tokens are then distributed as rewards to active community members."
+        },
+        {
+          phase: "REPEAT",
+          title: "Eternal Growth",
+          description: "Rewarded community members become even more motivated to support new launches.",
+          detail: "The cycle accelerates: more launches → more fees → more rewards → more engagement → more launches."
+        }
+      ]
+    },
+    impact: {
+      title: "Why This Changes Everything",
+      points: [
+        "Traditional launchpads extract value from creators. GREET creates value for everyone.",
+        "Instead of competing for attention, the entire community works together.",
+        "Every successful token makes GREET stronger, not weaker.",
+        "The platform literally promotes itself through its own success stories.",
+        "We've eliminated the zero-sum game. This is positive-sum economics."
+      ]
+    }
+  };
+
   const commandments = [
     {
-      number: 1,
       title: "Everyone can launch a token with GREET AI",
       description: "No barriers, no gatekeepers. If you have a vision, GREET AI makes it reality. The most accessible launchpad in crypto history. From idea to launch in minutes, not months.",
       details: "GREET AI eliminates all traditional barriers to token creation. No coding required, no complex smart contracts to write, no expensive audits needed. Just your vision and GREET AI's revolutionary technology."
     },
     {
-      number: 2,
       title: "Anyone can support any token launched on GREET",
       description: "Through the GREET app, become part of the most degen community in crypto. Support the projects you believe in and earn rewards for your loyalty.",
       details: "The GREET ecosystem is built on mutual support. Every token launched on GREET can be promoted by any user. This creates a network effect where successful projects lift the entire community."
     },
     {
-      number: 3,
       title: "You only need a Solana wallet and your X account",
       description: "That's it. No complex requirements, no bullshit. Just earn $GREET tokens through simple, transparent actions that benefit the entire ecosystem.",
       details: "We believe in simplicity and accessibility. No KYC, no complex verification processes, no hidden fees. Just connect your wallet, link your X account, and start earning immediately."
     },
     {
-      number: 4,
       title: "GREET takes a share of transaction fees",
       description: "From every token launch, GREET collects fees to power the ecosystem. These fees are reinvested into the community, creating a sustainable growth model.",
       details: "A small percentage of every transaction on GREET-launched tokens goes back to the GREET treasury. This creates a self-sustaining ecosystem where success breeds more success."
     },
     {
-      number: 5,
       title: "Fees are used to buy back GREET tokens",
       description: "Creating constant upward pressure and value for the GREET community. Every successful launch increases the value of GREET tokens for all holders.",
       details: "The buyback mechanism ensures that GREET token holders benefit from every successful project launched on the platform. This creates a virtuous cycle of growth and value creation."
     },
     {
-      number: 6,
       title: "GREET tokens are distributed as rewards",
       description: "For completing tasks, promoting tokens, and building the ecosystem. The more you contribute, the more you earn. Simple, fair, and transparent.",
       details: "Our reward system recognizes all forms of contribution. Whether you're creating content, promoting projects, or building the community, you'll be rewarded with GREET tokens."
     },
     {
-      number: 7,
       title: "You can only promote GREET-launched tokens",
       description: "To earn GREET rewards. It's a closed ecosystem that supports itself. This ensures quality and prevents spam while rewarding genuine engagement.",
       details: "By focusing exclusively on GREET-launched tokens, we create a high-quality ecosystem where every promotion adds real value. No spam, no fake projects, just genuine support."
     },
     {
-      number: 8,
       title: "Partnerships bring additional supply",
       description: "Other tokens can provide supply for airdrops through partnerships. This expands the ecosystem and creates additional earning opportunities for users.",
       details: "Strategic partnerships with other projects allow us to offer diverse rewards while maintaining the integrity of the GREET ecosystem. More partnerships mean more opportunities."
     },
     {
-      number: 9,
       title: "Everything is tracked and rewarded",
       description: "From the best dev to the sickest shiller. Every contribution matters and is recognized. Our advanced tracking system ensures fair and transparent rewards.",
       details: "Our AI-powered tracking system monitors all activities across the platform. From social media engagement to community building, every action is measured and rewarded appropriately."
     },
     {
-      number: 10,
       title: "The future is being built now",
       description: "Bonus programs, referrals, and many more features are coming. GREET is constantly evolving to provide the best possible experience for our community.",
       details: "We're just getting started. Advanced features like referral programs, tiered rewards, governance participation, and exclusive access are all in development. The best is yet to come."
@@ -177,6 +220,81 @@ const HowItWorks = () => {
             transition={{ duration: 0.5 }}
             className="max-w-7xl mx-auto"
           >
+            {/* Core Concept - The Most Important */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="bg-gradient-to-br from-green-900/50 to-blue-900/50 rounded-2xl p-8 border-2 border-green-500/50 mb-12"
+            >
+              {/* Main Title */}
+              <div className="text-center mb-8">
+                <h2 className="text-4xl md:text-5xl font-chippunk bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent mb-4">
+                  {coreConcept.title}
+                </h2>
+                <h3 className="text-2xl md:text-3xl font-bold text-green-300 mb-4">
+                  {coreConcept.subtitle}
+                </h3>
+                <p className="text-xl text-gray-300 mb-6 max-w-4xl mx-auto">
+                  {coreConcept.description}
+                </p>
+                <p className="text-lg text-green-300 font-mono italic max-w-5xl mx-auto">
+                  {coreConcept.vision}
+                </p>
+              </div>
+
+              {/* The GREET Flywheel */}
+              <div className="mb-8">
+                <h3 className="text-3xl font-bold text-center text-green-400 mb-6">
+                  {coreConcept.mechanism.title}
+                </h3>
+                <p className="text-lg text-gray-300 text-center mb-8 max-w-4xl mx-auto">
+                  {coreConcept.mechanism.description}
+                </p>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 max-w-7xl mx-auto">
+                  {coreConcept.mechanism.steps.map((step, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      className="bg-gray-800/50 rounded-xl p-6 border border-gray-600 hover:border-green-500/50 transition-all duration-300"
+                    >
+                      <div className="text-center mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <span className="text-white font-bold text-lg">{index + 1}</span>
+                        </div>
+                        <h4 className="text-green-400 font-bold text-lg mb-2">{step.phase}</h4>
+                        <h5 className="text-white font-semibold text-md mb-3">{step.title}</h5>
+                      </div>
+                      <p className="text-gray-300 text-sm mb-3 leading-relaxed">
+                        {step.description}
+                      </p>
+                      <p className="text-green-300 text-xs font-mono italic">
+                        {step.detail}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Impact Section */}
+              <div className="bg-gray-800/30 rounded-xl p-6 border border-gray-600">
+                <h3 className="text-2xl font-bold text-center text-green-400 mb-6">
+                  {coreConcept.impact.title}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+                  {coreConcept.impact.points.map((point, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <p className="text-gray-300 text-sm leading-relaxed">{point}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-chippunk bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent mb-6">
                 THE <span className="font-mono text-6xl md:text-7xl">10</span> COMMANDMENTS OF GREET
@@ -189,22 +307,21 @@ const HowItWorks = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {commandments.map((commandment, index) => (
                 <motion.div
-                  key={commandment.number}
+                  key={index}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className={`bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20 min-h-[400px] flex flex-col ${
-                    commandment.number === 10 ? 'md:col-span-2 lg:col-span-3' : ''
+                    index === 9 ? 'md:col-span-2 lg:col-span-3' : ''
                   }`}
                 >
-                  {/* Number Badge */}
+                  {/* GREET Logo */}
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-2xl font-bold text-green-400 font-mono">
-                      {commandment.number}.
-                    </span>
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-white text-sm">👻</span>
-                    </div>
+                    <img 
+                      src="/GREET.png" 
+                      alt="GREET AI" 
+                      className="w-10 h-10 object-contain"
+                    />
                   </div>
                   
                   {/* Title */}
