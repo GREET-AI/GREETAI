@@ -94,11 +94,51 @@ const Leaderboard = () => {
             rank: token.rank
           }));
 
-          setTopTokens(letsbonkTokens);
+          // Always keep GREET token at the top, then add other tokens
+          const greetToken: TopToken = {
+            id: 'greet',
+            name: 'GREET',
+            symbol: 'GREET',
+            imageUrl: '/GREET.png',
+            totalGreets: 0,
+            holders: 0,
+            marketCap: 0,
+            launchDate: '2024-01-15',
+            contractAddress: 'To be announced',
+            isLaunchingSoon: true,
+            platform: 'letsbonk',
+            mintAddress: undefined,
+            volume24h: 0,
+            price: 0,
+            age: 'Coming Soon',
+            rank: 1
+          };
+
+          setTopTokens([greetToken, ...letsbonkTokens]);
         }
       }
     } catch (error) {
       console.error('Error fetching LetsBonk tokens:', error);
+      // Fallback: just show GREET token
+      const greetToken: TopToken = {
+        id: 'greet',
+        name: 'GREET',
+        symbol: 'GREET',
+        imageUrl: '/GREET.png',
+        totalGreets: 0,
+        holders: 0,
+        marketCap: 0,
+        launchDate: '2024-01-15',
+        contractAddress: 'To be announced',
+        isLaunchingSoon: true,
+        platform: 'letsbonk',
+        mintAddress: undefined,
+        volume24h: 0,
+        price: 0,
+        age: 'Coming Soon',
+        rank: 1
+      };
+      setTopTokens([greetToken]);
     }
   };
 
@@ -253,14 +293,22 @@ const Leaderboard = () => {
       {selectedCategory === 'tokens' && (
         <div className="space-y-4">
           {topTokens.map((token, index) => (
-            <div key={token.id} className="bg-black/30 border border-green-500/30 rounded-xl p-6 hover:border-green-500/50 transition-colors">
+            <div 
+              key={token.id} 
+              className={`border rounded-xl p-6 transition-colors ${
+                token.id === 'greet' 
+                  ? 'bg-gradient-to-r from-green-500/20 to-purple-500/20 border-green-400/50 shadow-[0_0_20px_rgba(0,255,65,0.3)] hover:shadow-[0_0_30px_rgba(0,255,65,0.5)]' 
+                  : 'bg-black/30 border-green-500/30 hover:border-green-500/50'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 {/* Rank & Token Info */}
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                    index === 0 ? 'bg-yellow-500' :
-                    index === 1 ? 'bg-gray-400' :
-                    index === 2 ? 'bg-orange-600' : 'bg-green-500'
+                    token.id === 'greet' ? 'bg-gradient-to-r from-green-400 to-purple-500 shadow-[0_0_10px_rgba(0,255,65,0.5)]' :
+                    index === 1 ? 'bg-yellow-500' :
+                    index === 2 ? 'bg-gray-400' :
+                    index === 3 ? 'bg-orange-600' : 'bg-green-500'
                   }`}>
                     #{token.rank || index + 1}
                   </div>
@@ -272,7 +320,9 @@ const Leaderboard = () => {
                         alt={token.name}
                         width={48}
                         height={48}
-                        className="w-12 h-12 rounded-full"
+                        className={`w-12 h-12 rounded-full ${
+                          token.id === 'greet' ? 'animate-pulse' : ''
+                        }`}
                       />
                     ) : (
                       <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
@@ -281,7 +331,13 @@ const Leaderboard = () => {
                     )}
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-white font-bold text-lg">{token.name}</h3>
+                        <h3 className={`font-bold text-lg ${
+                          token.id === 'greet' 
+                            ? 'text-green-400 font-chippunk' 
+                            : 'text-white'
+                        }`}>
+                          {token.name}
+                        </h3>
                         {token.isLaunchingSoon && (
                           <div className="flex items-center gap-1 px-2 py-1 bg-green-500/20 rounded-full border border-green-500/30">
                             <span className="text-green-400 text-xs font-bold animate-pulse">🚀</span>
@@ -303,15 +359,27 @@ const Leaderboard = () => {
                 {/* Stats */}
                 <div className="flex items-center gap-8">
                   <div className="text-center">
-                    <div className="text-green-400 font-bold text-lg">{formatNumber(token.volume24h || token.totalGreets)}</div>
+                    <div className={`font-bold text-lg ${
+                      token.id === 'greet' ? 'text-green-400' : 'text-green-400'
+                    }`}>
+                      {formatNumber(token.volume24h || token.totalGreets)}
+                    </div>
                     <div className="text-gray-400 text-sm">24H VOLUME</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-blue-400 font-bold text-lg">{formatNumber(token.holders)}</div>
+                    <div className={`font-bold text-lg ${
+                      token.id === 'greet' ? 'text-blue-400' : 'text-blue-400'
+                    }`}>
+                      {formatNumber(token.holders)}
+                    </div>
                     <div className="text-gray-400 text-sm">HOLDERS</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-purple-400 font-bold text-lg">{formatMarketCap(token.marketCap)}</div>
+                    <div className={`font-bold text-lg ${
+                      token.id === 'greet' ? 'text-purple-400' : 'text-purple-400'
+                    }`}>
+                      {formatMarketCap(token.marketCap)}
+                    </div>
                     <div className="text-gray-400 text-sm">MARKET CAP</div>
                   </div>
                   {token.price && token.price > 0 && (
@@ -323,7 +391,11 @@ const Leaderboard = () => {
                   
                   {/* Contract Address */}
                   <div className="text-center">
-                    <div className="text-gray-300 font-mono text-sm bg-black/50 rounded px-3 py-2 border border-gray-600 cursor-pointer hover:border-green-500/50 transition-colors"
+                    <div className={`font-mono text-sm rounded px-3 py-2 border cursor-pointer transition-colors ${
+                      token.id === 'greet' 
+                        ? 'text-gray-300 bg-black/50 border-gray-600 hover:border-green-500/50' 
+                        : 'text-gray-300 bg-black/50 border-gray-600 hover:border-green-500/50'
+                    }`}
                          onClick={() => copyToClipboard(token.contractAddress, token.id)}>
                       {copiedAddress === token.id ? (
                         <span className="text-green-400">✓ Copied!</span>

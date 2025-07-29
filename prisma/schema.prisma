@@ -42,12 +42,18 @@ model User {
   achievements      Json?       // Unlocked achievements
   rankProgress      Json?       // Progress towards next rank
   
+  // GREET Token fields
+  greetBalance      Int         @default(0)                // Current GREET token balance
+  totalGreetEarned  Int         @default(0)                // Total GREET tokens ever earned
+  totalPostsMade    Int         @default(0)                // Total X posts made
+  
   // Timestamps
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   
   // Relations
   launchedTokens    LaunchedToken[]
+  userPosts         UserPost[]  // X posts made by this user
 }
 
 model Reward {
@@ -119,4 +125,28 @@ model LaunchedToken {
   @@index([platform])
   @@index([status])
   @@index([launchDate])
+}
+
+model UserPost {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Post details
+  postId          String    // Internal post ID (e.g., 'launch_1')
+  postLink        String    @unique // X post URL (unique to prevent duplicates)
+  content         String    // Original post content
+  reward          Int       // GREET tokens earned for this post
+  
+  // Post metadata
+  timestamp       DateTime  @default(now())
+  status          String    @default("VERIFIED") // "VERIFIED", "PENDING", "REJECTED"
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([postLink])
+  @@index([timestamp])
 }
