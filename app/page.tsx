@@ -28,6 +28,15 @@ function Typewriter({ text, onDone }: { text: string, onDone?: () => void }) {
     }, 18);
     return () => clearInterval(interval);
   }, [text, onDone]);
+  
+  // Scroll während des Tippens
+  useEffect(() => {
+    const scrollContainer = document.querySelector('.overflow-y-auto') as HTMLElement;
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+  }, [displayed]);
+  
   return <span className="typewriter">{displayed}</span>;
 }
 
@@ -64,7 +73,26 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<Array<{text: string, isBot: boolean}>>([]);
   const [isChatActive, setIsChatActive] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState('quests');
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages, isTyping]);
+
+  // Scroll to bottom when chat becomes active
+  useEffect(() => {
+    if (isChatActive) {
+      setTimeout(scrollToBottom, 100);
+    }
+  }, [isChatActive]);
 
   // Bot ASCII Art je nach Status
   const botArtSleeping = `(–_–) zZz\n<)   )╯  GREET-BOT\n /   \\`;
@@ -119,12 +147,6 @@ export default function Home() {
     "You know what to do: send GREET, ser!"
   ];
 
-  useEffect(() => {
-    if (isChatActive && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages, isChatActive]);
-
   const handleSendGreet = async () => {
     if (!greetMessage) return;
 
@@ -169,6 +191,10 @@ export default function Home() {
       { text: command, isBot: false }
     ]);
     setIsTyping(true);
+    
+    // Scroll nach dem Hinzufügen der User-Nachricht
+    setTimeout(scrollToBottom, 50);
+    
     // Erste Bot-Nachricht als Kontext holen
     const firstBotMsg = chatMessages.find(m => m.isBot)?.text;
     const reply = await fetchLLMReply(command, !!publicKey, firstBotMsg);
@@ -177,6 +203,9 @@ export default function Home() {
       { text: reply, isBot: true }
     ]);
     setIsTyping(false);
+    
+    // Scroll nach der Bot-Antwort
+    setTimeout(scrollToBottom, 100);
   };
 
   // Landing Page (Not Logged In)
@@ -198,30 +227,30 @@ export default function Home() {
             GREET
           </motion.h1>
 
-          {/* Chat window */}
-          <div className="flex-1 w-[80vw] max-w-[1400px] mx-auto bg-black/50 border border-gray-800 rounded-lg p-12 mb-8 flex flex-col items-center justify-start relative">
+          {/* Chat window - ursprüngliche Größe mit internem Scroll */}
+          <div className="flex-1 w-[80vw] max-w-[1400px] mx-auto bg-black/50 border border-gray-800 rounded-lg p-8 mb-8 flex flex-col items-center justify-start relative">
             {/* GREET-Avatar links oben */}
             <Image 
               src="/GREET.png" 
               alt="GREET Character" 
-              width={96} 
-              height={96} 
-              className={`w-24 h-24 object-contain select-none absolute left-0 top-0 ml-0 mt-4 z-20${chatMessages.length && chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`}
+              width={80} 
+              height={80} 
+              className={`w-20 h-20 object-contain select-none absolute left-4 top-4 z-20${chatMessages.length && chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`}
             />
             {/* User-Avatar rechts unten, direkt über dem Eingabefeld */}
             {isChatActive && (
               <Image 
                 src="/boy.png" 
                 alt="User Avatar" 
-                width={80} 
-                height={80} 
-                className={`w-20 h-20 object-contain select-none absolute right-0 bottom-[90px] mr-0 z-20${chatMessages.length && !chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`}
+                width={64} 
+                height={64} 
+                className={`w-16 h-16 object-contain select-none absolute right-4 bottom-20 mr-0 z-20${chatMessages.length && !chatMessages[chatMessages.length-1].isBot && isTyping ? ' animate-talk' : ''}`}
               />
             )}
-            {/* Nachrichtenbereich, Padding links und rechts für Avatare */}
-            <div className="w-full max-w-5xl flex-1 flex flex-col h-[320px] overflow-y-auto bg-transparent px-2 pl-0 pr-0 custom-scrollbar" style={{ minHeight: 0 }}>
+            {/* Nachrichtenbereich mit fester Höhe und Scroll */}
+            <div className="w-full flex-1 flex flex-col overflow-y-auto bg-transparent px-2 pt-24 pb-24 custom-scrollbar" style={{ minHeight: 0, maxHeight: '400px' }} ref={chatContainerRef}>
               {isChatActive && (
-                <div className="w-full space-y-2">
+                <div className="w-full space-y-3">
                   {chatMessages.map((message, index) => {
                     const isLast = index === chatMessages.length - 1;
                     return (
@@ -229,30 +258,38 @@ export default function Home() {
                         {/* GREET (Bot) Bubble: linke Hälfte */}
                         <div className="w-1/2 flex items-start">
                           {message.isBot && (
-                            <div className="relative max-w-full bg-green-900/80 border-2 border-green-400 rounded-2xl p-2 mb-1 text-left shadow-[0_0_16px_2px_#00FF41] ml-4 text-base font-tech z-10">
-                              <span className="block text-green-300 font-bold mb-0.5 text-xs">GREET:</span>
+                            <div className="relative max-w-[85%] bg-green-900/80 border-2 border-green-400 rounded-2xl p-3 mb-1 text-left shadow-[0_0_16px_2px_#00FF41] ml-6 text-sm font-tech z-10">
+                              <span className="block text-green-300 font-bold mb-1 text-xs font-chippunk" style={{ textShadow: '0 2px 8px #00FF41, 0 4px 16px #00FF41' }}>GREET:</span>
                               {isLast ? (
-                                <Typewriter text={message.text} />
+                                <div className="text-green-100 text-sm leading-relaxed">
+                                  <Typewriter text={message.text} />
+                                </div>
                               ) : (
-                                <pre className="whitespace-pre-wrap font-mono text-sm text-green-100">{message.text}</pre>
+                                <div className="text-green-100 text-sm leading-relaxed whitespace-pre-wrap font-mono">
+                                  {message.text}
+                                </div>
                               )}
                               {/* Pfeil links */}
-                              <span className="absolute -left-2 bottom-1 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-400"></span>
+                              <span className="absolute -left-2 bottom-3 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-400"></span>
                             </div>
                           )}
                         </div>
                         {/* User Bubble: rechte Hälfte */}
                         <div className="w-1/2 flex items-end justify-end">
                           {!message.isBot && (
-                            <div className="relative max-w-full bg-[#ab9ff2] border-2 border-[#ab9ff2] rounded-2xl p-2 mb-1 text-right shadow-[0_0_8px_2px_#ab9ff2] mr-4 text-base font-tech font-bold text-[#2d225a] z-10">
-                              <span className="block text-[#2d225a] font-bold mb-0.5 text-xs">You:</span>
+                            <div className="relative max-w-[85%] bg-[#ab9ff2] border-2 border-[#ab9ff2] rounded-2xl p-3 mb-1 text-right shadow-[0_0_8px_2px_#ab9ff2] mr-6 text-sm font-tech font-bold text-[#2d225a] z-10">
+                              <span className="block text-[#2d225a] font-bold mb-1 text-xs font-chippunk" style={{ textShadow: '0 2px 8px #ab9ff2, 0 4px 16px #ab9ff2' }}>YOU:</span>
                               {isLast ? (
-                                <Typewriter text={message.text} />
+                                <div className="text-[#2d225a] text-sm leading-relaxed">
+                                  <Typewriter text={message.text} />
+                                </div>
                               ) : (
-                                <pre className="whitespace-pre-wrap font-mono text-sm text-[#2d225a]">{message.text}</pre>
+                                <div className="text-[#2d225a] text-sm leading-relaxed whitespace-pre-wrap font-mono">
+                                  {message.text}
+                                </div>
                               )}
                               {/* Pfeil rechts */}
-                              <span className="absolute -right-2 bottom-1 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-l-4 border-l-[#ab9ff2]"></span>
+                              <span className="absolute -right-2 bottom-3 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-l-4 border-l-[#ab9ff2]"></span>
                             </div>
                           )}
                         </div>
@@ -263,10 +300,10 @@ export default function Home() {
                   {isTyping && (
                     <div className="flex w-full flex-row">
                       <div className="w-1/2 flex items-start">
-                        <div className="relative max-w-full bg-green-900/80 border-2 border-green-400 rounded-2xl p-2 mb-1 text-left shadow-[0_0_16px_2px_#00FF41] ml-4 text-base font-tech z-10">
-                          <span className="block text-green-300 font-bold mb-0.5 text-xs">GREET:</span>
-                          <span className="inline-block animate-pulse">...</span>
-                          <span className="absolute -left-2 bottom-1 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-400"></span>
+                        <div className="relative max-w-[85%] bg-green-900/80 border-2 border-green-400 rounded-2xl p-3 mb-1 text-left shadow-[0_0_16px_2px_#00FF41] ml-6 text-sm font-tech z-10">
+                          <span className="block text-green-300 font-bold mb-1 text-xs font-chippunk" style={{ textShadow: '0 2px 8px #00FF41, 0 4px 16px #00FF41' }}>GREET:</span>
+                          <span className="inline-block animate-pulse text-green-100">...</span>
+                          <span className="absolute -left-2 bottom-3 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-4 border-r-green-400"></span>
                         </div>
                       </div>
                     </div>
@@ -277,11 +314,11 @@ export default function Home() {
             </div>
             {/* Eingabefeld immer unten im Chat, nur wenn aktiv */}
             {isChatActive && (
-              <div className="w-full flex gap-2 mt-4">
+              <div className="w-full flex gap-2 mt-4 absolute bottom-4 left-4 right-4">
                 <input
                   type="text"
                   placeholder="Talk to GREET"
-                  className="flex-1 bg-black/50 border border-green-500 rounded p-2 text-green-500 font-chippunk placeholder:font-chippunk"
+                  className="flex-1 bg-black/50 border border-green-500 rounded-lg p-3 text-green-500 font-chippunk placeholder:font-chippunk text-sm"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                       handleChatCommand(e.currentTarget.value.trim());
@@ -297,7 +334,7 @@ export default function Home() {
                       input.value = '';
                     }
                   }}
-                  className="btn bg-black border border-white text-white hover:bg-white hover:text-black transition"
+                  className="btn bg-black border border-white text-white hover:bg-white hover:text-black transition px-4 py-3 rounded-lg text-sm"
                 >
                   Send
                 </button>
@@ -306,11 +343,17 @@ export default function Home() {
           </div>
 
           {/* Wallet connection */}
-          <div className="flex justify-center items-center gap-4 mb-4">
-            <ClientWalletButton className="btn-matrix animate-pulse-wallet" />
-            <span className="text-white text-lg md:text-2xl greet-glow font-chippunk">
-              & GREET someone
-            </span>
+          <div className="flex flex-col items-center justify-center gap-4 mb-8">
+            <div className="text-center mb-4">
+              <h1 className="text-4xl md:text-6xl font-chippunk text-green-500 mb-2">GREET</h1>
+              <p className="text-green-400 text-lg md:text-xl">Solana's favorite AI Launchpad</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <ClientWalletButton className="btn-matrix" />
+              <span className="text-white text-lg md:text-2xl greet-glow font-chippunk">
+                & GREET someone
+              </span>
+            </div>
           </div>
 
           {/* Talk to GREET button */}
@@ -335,30 +378,40 @@ export default function Home() {
       <StickyHeader />
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
-      <div className="pl-[240px] p-8">
+      <div className="pl-[240px] px-8 pt-28 pb-8">
         {activeSection === 'launch' && <LaunchToken />}
         {activeSection === 'quests' && <QuestSystem />}
         
         {activeSection === 'send' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
-            <h2 className="text-2xl font-bold mb-4">Send Greet</h2>
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Enter Twitter handle (optional)"
-                className="w-full bg-black/50 border border-green-500 rounded p-2 text-green-500"
-                value={greetRecipient}
-                onChange={(e) => setGreetRecipient(e.target.value)}
-              />
-              <textarea
-                placeholder="Type your greet message..."
-                className="w-full bg-black/50 border border-green-500 rounded p-2 text-green-500 h-32"
-                value={greetMessage}
-                onChange={(e) => setGreetMessage(e.target.value)}
-              />
+          <div className="bg-neutral-950 rounded-xl p-6 shadow-md max-w-3xl mx-auto border border-neutral-800 flex flex-col min-h-[30rem] max-h-[calc(100vh-16rem)] overflow-y-auto custom-scrollbar">
+            <h2 className="text-2xl font-semibold mb-6 text-neutral-100">Send a Greet</h2>
+            <div className="space-y-5 flex-grow">
+              <div>
+                <label htmlFor="twitterHandle" className="block text-sm font-medium text-neutral-400 mb-1.5">Twitter Handle (Optional)</label>
+                <input
+                  id="twitterHandle"
+                  type="text"
+                  placeholder="@username"
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-md py-2 px-3 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors duration-150"
+                  value={greetRecipient}
+                  onChange={(e) => setGreetRecipient(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="greetMessage" className="block text-sm font-medium text-neutral-400 mb-1.5">Your Greet Message</label>
+                <textarea
+                  id="greetMessage"
+                  placeholder="Your Greet message..."
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-md py-2 px-3 text-neutral-100 placeholder-neutral-500 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors duration-150"
+                  value={greetMessage}
+                  onChange={(e) => setGreetMessage(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end pt-4">
               <button
                 onClick={handleSendGreet}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold py-2 px-5 rounded-full shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-75"
               >
                 Send Greet
               </button>
@@ -367,7 +420,7 @@ export default function Home() {
         )}
 
         {activeSection === 'history' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
+          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Recent Greets</h2>
             <div className="space-y-2">
               {greetHistory.map((greet, index) => (
@@ -380,7 +433,7 @@ export default function Home() {
         )}
 
         {activeSection === 'holdings' && (
-          <div className="space-y-8 mt-[96px]">
+          <div className="space-y-8">
             <div className="bg-black/50 border border-green-500 rounded-lg p-6">
               <h2 className="text-2xl font-bold mb-4">Your Holdings</h2>
               <div className="text-green-500">
@@ -403,7 +456,7 @@ export default function Home() {
         )}
 
         {activeSection === 'stats' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
+          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Your Stats</h2>
             <div className="grid grid-cols-2 gap-4 text-green-500">
               <div className="space-y-2">
@@ -431,7 +484,7 @@ export default function Home() {
         )}
 
         {activeSection === 'leaderboard' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6 mt-[96px]">
+          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Top Greeters</h2>
             <div className="space-y-2">
               {topGreeters.map((greeter, index) => (

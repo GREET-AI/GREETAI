@@ -11,57 +11,19 @@ export async function GET(request: NextRequest) {
   try {
     // Get and decode wallet address from query params
     const encodedWallet = request.nextUrl.searchParams.get('wallet');
-    
-    console.log('Twitter OAuth Request:', {
-      url: request.nextUrl.toString(),
-      encodedWallet,
-      headers: Object.fromEntries(request.headers.entries())
-    });
-    
-    if (!encodedWallet) {
-      console.error('Missing wallet address in request:', request.nextUrl.toString());
-      return NextResponse.json(
-        { 
-          error: 'Wallet address is required',
-          details: 'The wallet parameter is missing from the request'
-        },
-        { status: 400 }
-      );
-    }
-
-    const walletAddress = decodeURIComponent(encodedWallet);
+    const walletAddress = encodedWallet ? decodeURIComponent(encodedWallet) : null;
     
     if (!walletAddress) {
-      console.error('Invalid wallet address after decoding:', encodedWallet);
-      return NextResponse.json(
-        { 
-          error: 'Invalid wallet address',
-          details: 'Could not decode the wallet address'
-        },
-        { status: 400 }
-      );
+      console.error('Missing wallet address in request:', request.nextUrl.toString());
+      throw new Error('Wallet address is required');
     }
 
     if (!TWITTER_CLIENT_ID) {
-      console.error('Missing TWITTER_CLIENT_ID environment variable');
-      return NextResponse.json(
-        { 
-          error: 'Configuration error',
-          details: 'Twitter Client ID is not configured'
-        },
-        { status: 500 }
-      );
+      throw new Error('TWITTER_CLIENT_ID is not defined');
     }
 
     if (!process.env.NEXT_PUBLIC_APP_URL) {
-      console.error('Missing NEXT_PUBLIC_APP_URL environment variable');
-      return NextResponse.json(
-        { 
-          error: 'Configuration error',
-          details: 'App URL is not configured'
-        },
-        { status: 500 }
-      );
+      throw new Error('NEXT_PUBLIC_APP_URL is not defined');
     }
 
     // Generate PKCE values

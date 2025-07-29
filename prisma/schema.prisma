@@ -15,19 +15,36 @@ datasource db {
 }
 
 model User {
-  id              String     @id @default(cuid())
-  twitterUsername String     @unique
-  pumpWallet      String     @unique
-  referralCode    String     @unique
-  referredBy      String?    // ID of the user who referred this user
-  referrer        User?      @relation("ReferralRelation", fields: [referredBy], references: [id])
-  referrals       User[]     @relation("ReferralRelation")
-  rewardsEarned   Reward[]
+  id                   String     @id @default(cuid())
+  twitterUsername      String     @unique
+  pumpWallet          String     @unique
+  referralCode        String     @unique
+  referredBy          String?    // ID of the user who referred this user
+  referrer            User?      @relation("ReferralRelation", fields: [referredBy], references: [id])
+  referrals           User[]     @relation("ReferralRelation")
+  rewardsEarned       Reward[]
   twitterAccessToken  String?
   twitterRefreshToken String?
   twitterTokenExpiresAt DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  
+  // Profile fields
+  displayName        String?     // Optional, defaults to Twitter username
+  bio               String?     // Optional user bio
+  profileImageUrl   String?     // Profile picture URL
+  customLinks       Json?       // Flexible storage for additional social links
+  isProfileComplete Boolean     @default(false)
+  
+  // Rank & Progress fields
+  rank              String      @default("Deadass Rookie")  // Current rank title
+  xp                Int         @default(0)                 // Experience points
+  totalLaunches     Int         @default(0)                // Number of tokens launched
+  totalShills       Int         @default(0)                // Number of successful promotions
+  achievements      Json?       // Unlocked achievements
+  rankProgress      Json?       // Progress towards next rank
+  
+  // Timestamps
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 }
 
 model Reward {

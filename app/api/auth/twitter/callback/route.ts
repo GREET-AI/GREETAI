@@ -43,100 +43,25 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!code || !codeVerifier) {
-    throw new Error('Missing required OAuth parameters');
-  }
-
-  if (!process.env.TWITTER_CLIENT_ID || !process.env.TWITTER_CLIENT_SECRET) {
-    console.error('Missing Twitter credentials:', {
-      hasClientId: !!process.env.TWITTER_CLIENT_ID,
-      hasClientSecret: !!process.env.TWITTER_CLIENT_SECRET
-    });
-    throw new Error('Missing Twitter API credentials');
-  }
-
-  // Clean and validate credentials
-  const clientId = process.env.TWITTER_CLIENT_ID.trim();
-  const clientSecret = process.env.TWITTER_CLIENT_SECRET.trim();
-
-  // Validate credential lengths - Client ID must be 34 chars, Secret can be 49 or 50
-  if (clientId.length !== 34 || (clientSecret.length !== 49 && clientSecret.length !== 50)) {
-    console.error('Invalid credential lengths:', {
-      expectedClientIdLength: 34,
-      actualClientIdLength: clientId.length,
-      expectedClientSecretLength: '49 or 50',
-      actualClientSecretLength: clientSecret.length
-    });
-    throw new Error('Invalid Twitter API credential lengths');
-  }
-
-  // Log raw credentials for debugging (first few chars only)
-  console.log('Raw Credentials Debug:', {
-    clientIdStart: clientId.substring(0, 5) + '...',
-    clientSecretStart: clientSecret.substring(0, 5) + '...',
-    hasSpecialChars: {
-      clientId: /[^a-zA-Z0-9-]/.test(clientId),
-      clientSecret: /[^a-zA-Z0-9-]/.test(clientSecret)
-    }
-  });
-
-  // Prepare authorization header
-  const credentials = `${clientId}:${clientSecret}`;
-  const base64Credentials = Buffer.from(credentials).toString('base64');
-  const authHeader = `Basic ${base64Credentials}`;
-
-  // Validate final header format
-  if (!authHeader.startsWith('Basic ') || authHeader.length < 20) {
-    console.error('Invalid auth header format:', {
-      startsWithBasic: authHeader.startsWith('Basic '),
-      headerLength: authHeader.length
-    });
-    throw new Error('Invalid authorization header format');
-  }
-
-  console.log('Auth Debug:', {
-    credentialsLength: credentials.length,
-    base64Length: base64Credentials.length,
-    authHeaderLength: authHeader.length,
-    sampleAuth: authHeader.substring(0, 20) + '...',
-    format: {
-      hasColon: credentials.includes(':'),
-      colonPosition: credentials.indexOf(':'),
-      base64Pattern: /^[A-Za-z0-9+/]+=*$/.test(base64Credentials)
-    }
-  });
-
   try {
+    // Generate Base64 credentials
+    const credentials = Buffer.from(
+      `${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`
+    ).toString('base64');
+
     // Exchange code for tokens
-    const params = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: TWITTER_REDIRECT_URI,
-      code_verifier: codeVerifier
-    });
-
-    console.log('Request Parameters:', {
-      grantType: params.get('grant_type'),
-      codeLength: code.length,
-      redirectUri: params.get('redirect_uri'),
-      verifierLength: codeVerifier.length
-    });
-
     const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
       headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: params.toString()
-    });
-
-    // Log response details before checking status
-    console.log('Token Response Debug:', {
-      status: tokenResponse.status,
-      statusText: tokenResponse.statusText,
-      headers: Object.fromEntries(tokenResponse.headers.entries())
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code!,
+        redirect_uri: TWITTER_REDIRECT_URI,
+        code_verifier: codeVerifier!
+      }).toString()
     });
 
     if (!tokenResponse.ok) {
@@ -148,8 +73,16 @@ export async function GET(request: NextRequest) {
         requestDetails: {
           url: 'https://api.twitter.com/2/oauth2/token',
           method: 'POST',
-          headerKeys: Object.keys(tokenResponse.headers),
-          bodyParams: Array.from(params.keys())
+          headers: {
+            'Authorization': `Basic ${credentials.substring(0, 20)}...`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          bodyParams: Object.fromEntries(new URLSearchParams({
+            grant_type: 'authorization_code',
+            code: code?.substring(0, 20) + '...',
+            redirect_uri: TWITTER_REDIRECT_URI,
+            code_verifier: codeVerifier?.substring(0, 20) + '...'
+          }).entries())
         }
       });
       throw new Error(`Token exchange failed: ${tokenResponse.status} (${errorText})`);

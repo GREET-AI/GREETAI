@@ -4,14 +4,18 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     
-    // Forward the request to pump.fun
-    const response = await fetch("https://pump.fun/api/ipfs", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-    return NextResponse.json(data);
+    // Sichere IPFS Upload für LetsBonk.fun Token-Metadaten
+    // Hier können wir später eine sichere IPFS-Lösung integrieren
+    
+    return NextResponse.json(
+      { 
+        message: 'IPFS upload for LetsBonk.fun tokens coming soon',
+        platform: 'LetsBonk.fun',
+        status: 'development',
+        metadataUri: 'ipfs://placeholder' // Placeholder für später
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Error in IPFS upload:', error);
     return NextResponse.json(
@@ -19,16 +23,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
-
-// Handle OPTIONS requests for CORS
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
 } 

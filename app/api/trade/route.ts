@@ -4,29 +4,37 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Forward the request to pumpportal.fun
-    const response = await fetch("https://pumpportal.fun/api/trade-local", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-
-    // If response is binary (for transaction), return as arrayBuffer
-    if (response.headers.get("content-type")?.includes("application/octet-stream")) {
-      const data = await response.arrayBuffer();
-      return new NextResponse(data, {
-        status: response.status,
-        headers: {
-          "Content-Type": "application/octet-stream"
-        }
-      });
+    // Sichere LetsBonk.fun Integration
+    if (body.action === "create") {
+      // Hier können wir später die LetsBonk.fun API integrieren
+      // Für jetzt: Sichere Validierung ohne automatische Transaktionen
+      return NextResponse.json(
+        { 
+          message: 'Token creation via LetsBonk.fun coming soon',
+          platform: 'LetsBonk.fun',
+          status: 'development'
+        },
+        { status: 200 }
+      );
     }
-
-    // Otherwise return as JSON
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    
+    // Trading-Aktionen für bestehende Tokens
+    if (body.action === "buy" || body.action === "sell") {
+      // LetsBonk.fun Trading API Integration
+      return NextResponse.json(
+        { 
+          message: 'Trading via LetsBonk.fun coming soon',
+          platform: 'LetsBonk.fun',
+          status: 'development'
+        },
+        { status: 200 }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: 'Invalid action' },
+      { status: 400 }
+    );
   } catch (error) {
     console.error('Error in trade API:', error);
     return NextResponse.json(
@@ -34,16 +42,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
-
-// Handle OPTIONS requests for CORS
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
 } 

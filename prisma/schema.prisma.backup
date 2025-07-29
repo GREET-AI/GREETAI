@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+}
+
+model User {
+  id              String     @id @default(cuid())
+  twitterUsername String     @unique
+  pumpWallet      String     @unique
+  referralCode    String     @unique
+  referredBy      String?    // ID of the user who referred this user
+  referrer        User?      @relation("ReferralRelation", fields: [referredBy], references: [id])
+  referrals       User[]     @relation("ReferralRelation")
+  rewardsEarned   Reward[]
+  twitterAccessToken  String?
+  twitterRefreshToken String?
+  twitterTokenExpiresAt DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Reward {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  amount      Int
+  rewardType  String    // "REFERRAL_L1", "REFERRAL_L2", "REFERRAL_L3", "QUEST"
+  status      String    // "PENDING", "PAID", "FAILED"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Quest {
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  reward      Int
+  xp          Int
+  type        String    // "TWITTER", "REFERRAL", "ENGAGEMENT"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
