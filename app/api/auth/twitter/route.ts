@@ -5,7 +5,10 @@ import { NextRequest } from 'next/server';
 
 // Twitter OAuth Configuration
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID!;
-const TWITTER_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL + '/api/auth/twitter/callback';
+// Use a more reliable redirect URI construction
+const TWITTER_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL 
+  ? `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/twitter/callback`
+  : 'http://localhost:3000/api/auth/twitter/callback';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,11 +22,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (!TWITTER_CLIENT_ID) {
-      throw new Error('TWITTER_CLIENT_ID is not defined');
-    }
-
-    if (!process.env.NEXT_PUBLIC_APP_URL) {
-      throw new Error('NEXT_PUBLIC_APP_URL is not defined');
+      console.error('Missing TWITTER_CLIENT_ID environment variable');
+      throw new Error('Twitter client ID is not configured');
     }
 
     // Generate PKCE values
@@ -47,7 +47,8 @@ export async function GET(request: NextRequest) {
     console.log('Twitter OAuth Request:', {
       walletAddress,
       state: state.substring(0, 20) + '...',
-      redirectUri: TWITTER_REDIRECT_URI
+      redirectUri: TWITTER_REDIRECT_URI,
+      clientId: TWITTER_CLIENT_ID.substring(0, 10) + '...'
     });
 
     // Set cookies for verification
@@ -55,8 +56,8 @@ export async function GET(request: NextRequest) {
     
     const cookieOptions: Partial<ResponseCookie> = {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none' as const,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
       path: '/',
       maxAge: 60 * 10, // 10 minutes
     };

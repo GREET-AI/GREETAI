@@ -4,7 +4,10 @@ import prisma from '../../../../lib/prisma';
 
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID!;
 const TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET!;
-const TWITTER_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL + '/api/auth/twitter/callback';
+// Use a more reliable redirect URI construction
+const TWITTER_REDIRECT_URI = process.env.NEXT_PUBLIC_APP_URL 
+  ? `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/twitter/callback`
+  : 'http://localhost:3000/api/auth/twitter/callback';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -111,23 +114,53 @@ export async function GET(request: NextRequest) {
 
     // Store tokens in database
     if (walletAddress) {
-      await prisma.user.upsert({
-        where: { pumpWallet: walletAddress },
-        update: {
-          twitterUsername: userData.data.username,
-          twitterAccessToken: tokenData.access_token,
-          twitterRefreshToken: tokenData.refresh_token,
-          twitterTokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
-        },
-        create: {
-          pumpWallet: walletAddress,
-          twitterUsername: userData.data.username,
-          twitterAccessToken: tokenData.access_token,
-          twitterRefreshToken: tokenData.refresh_token,
-          twitterTokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
-          referralCode: `GREET${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-        }
+      // First, check if a user with this Twitter username already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { twitterUsername: userData.data.username }
       });
+
+      if (existingUser) {
+        // Update existing user with new wallet and tokens
+        await prisma.user.update({
+          where: { twitterUsername: userData.data.username },
+          data: {
+            pumpWallet: walletAddress,
+            twitterAccessToken: tokenData.access_token,
+            twitterRefreshToken: tokenData.refresh_token,
+            twitterTokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
+          }
+        });
+      } else {
+        // Check if a user with this wallet already exists
+        const existingWalletUser = await prisma.user.findUnique({
+          where: { pumpWallet: walletAddress }
+        });
+
+        if (existingWalletUser) {
+          // Update existing wallet user with Twitter info
+          await prisma.user.update({
+            where: { pumpWallet: walletAddress },
+            data: {
+              twitterUsername: userData.data.username,
+              twitterAccessToken: tokenData.access_token,
+              twitterRefreshToken: tokenData.refresh_token,
+              twitterTokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
+            }
+          });
+        } else {
+          // Create new user
+          await prisma.user.create({
+            data: {
+              pumpWallet: walletAddress,
+              twitterUsername: userData.data.username,
+              twitterAccessToken: tokenData.access_token,
+              twitterRefreshToken: tokenData.refresh_token,
+              twitterTokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000),
+              referralCode: `GREET${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+            }
+          });
+        }
+      }
     }
 
     // Clear OAuth cookies and return success
@@ -145,8 +178,8 @@ export async function GET(request: NextRequest) {
     // Cookie options for clearing
     const cookieOptions: Partial<ResponseCookie> = {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none' as const,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
       path: '/',
       maxAge: 0
     };

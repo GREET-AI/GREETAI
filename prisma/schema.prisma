@@ -45,6 +45,9 @@ model User {
   // Timestamps
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  launchedTokens    LaunchedToken[]
 }
 
 model Reward {
@@ -67,4 +70,53 @@ model Quest {
   type        String    // "TWITTER", "REFERRAL", "ENGAGEMENT"
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model LaunchedToken {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  
+  // Token Details
+  name              String
+  symbol            String
+  description       String?
+  imageUrl          String?
+  bannerUrl         String?
+  
+  // Platform & Launch Details
+  platform          String    // "PUMP_FUN", "LETSBONK"
+  launchpadId       String?   // ID from the actual launchpad (when available)
+  launchpadUrl      String?   // URL to the token on the launchpad
+  
+  // Token Metadata
+  website           String?
+  twitterUrl        String?
+  telegramUrl       String?
+  totalSupply       String?
+  decimals          Int?
+  
+  // Status & Tracking
+  status            String    @default("PENDING") // "PENDING", "LAUNCHING", "LIVE", "FAILED"
+  launchDate        DateTime?
+  liveDate          DateTime?
+  
+  // Market Data (will be updated via API)
+  marketCap         Float?
+  price             Float?
+  volume24h         Float?
+  holders           Int?
+  
+  // API Integration
+  lastApiCheck      DateTime?
+  apiData           Json?     // Raw API response data
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([platform])
+  @@index([status])
+  @@index([launchDate])
 }

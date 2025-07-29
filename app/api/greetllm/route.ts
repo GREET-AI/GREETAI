@@ -13,14 +13,21 @@ export async function POST(req: NextRequest) {
     }
   ];
 
-  // Beide API-Keys für Fallback
+  // API-Keys (möglicherweise abgelaufen)
   const apiKeys = [
     'AIzaSyD8UNnNS9wcp2ReVVAi2iRvZq4yCiAg2PE',
     'AIzaSyDZ93djmNzYIRkFs8qxTJmRPWVaYf_fPxM'
   ];
 
+  // Versuche zuerst die Gemini API mit Timeout
   for (const apiKey of apiKeys) {
     try {
+      console.log(`Trying Gemini API with key: ${apiKey.substring(0, 10)}...`);
+      
+      // Timeout nach 5 Sekunden
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
@@ -35,23 +42,28 @@ export async function POST(req: NextRequest) {
             maxOutputTokens: 150,
           }
         }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
-      console.log('Google Gemini response:', JSON.stringify(data, null, 2));
+      console.log('Gemini API response status:', response.status);
       
       if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        console.log('Gemini API success!');
         return NextResponse.json({ reply: data.candidates[0].content.parts[0].text });
-      } else if (data.error?.code === 429) {
-        // Rate limit erreicht, versuche nächsten API-Key
-        console.log(`Rate limit for API key, trying next one...`);
+      } else if (data.error?.code === 429 || data.error?.code === 503) {
+        console.log(`API error (${data.error.code}) for key ${apiKey.substring(0, 10)}..., trying next one...`);
         continue;
       } else {
+        console.log('Gemini API error:', data.error);
         throw new Error('Gemini API error: ' + (data.error?.message || 'Unknown error'));
       }
     } catch (error) {
-      console.error(`Gemini API error with key ${apiKey}:`, error);
-      // Versuche nächsten API-Key
+      console.error(`Gemini API error with key ${apiKey.substring(0, 10)}...:`, error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Request timed out, trying next key...');
+      }
       continue;
     }
   }

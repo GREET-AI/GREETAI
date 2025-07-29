@@ -8,9 +8,16 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 import MatrixBackground from './components/MatrixBackground';
 import QuestSystem from './components/QuestSystem';
 import Sidebar from './components/Sidebar';
-import LaunchToken from './components/LaunchToken';
+import LaunchPad from './components/LaunchPad';
+import LaunchedTokens from './components/LaunchedTokens';
 import Image from 'next/image';
 import StickyHeader from './components/StickyHeader';
+import XPostTracker from './components/XPostTracker';
+import SupportGhost from './components/SupportGhost';
+import PageGreetGhost from './components/PageGreetGhost';
+import LiveGreetHistory from './components/LiveGreetHistory';
+import HoldingsAndStats from './components/HoldingsAndStats';
+import Leaderboard from './components/Leaderboard';
 
 // Typewriter-Komponente
 function Typewriter({ text, onDone }: { text: string, onDone?: () => void }) {
@@ -75,6 +82,7 @@ export default function Home() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState('quests');
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -93,6 +101,17 @@ export default function Home() {
       setTimeout(scrollToBottom, 100);
     }
   }, [isChatActive]);
+
+  // Check for saved section on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedSection = localStorage.getItem('greetActiveSection');
+      if (savedSection) {
+        setActiveSection(savedSection);
+        localStorage.removeItem('greetActiveSection'); // Clear after reading
+      }
+    }
+  }, []);
 
   // Bot ASCII Art je nach Status
   const botArtSleeping = `(–_–) zZz\n<)   )╯  GREET-BOT\n /   \\`;
@@ -374,129 +393,33 @@ export default function Home() {
 
   // Dashboard (Logged In)
   return (
-    <main className="min-h-screen bg-black text-white">
-      <StickyHeader />
+    <main className="h-screen bg-black text-white overflow-hidden">
+      <StickyHeader onRegisterModalChange={setIsRegisterModalOpen} />
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
-      <div className="pl-[240px] px-8 pt-28 pb-8">
-        {activeSection === 'launch' && <LaunchToken />}
+      <div className="pl-[240px] px-8 pt-28 pb-8 h-full overflow-y-auto">
+              {activeSection === 'launchpad' && <LaunchPad />}
         {activeSection === 'quests' && <QuestSystem />}
+        {activeSection === 'launched-tokens' && <LaunchedTokens />}
         
         {activeSection === 'send' && (
-          <div className="bg-neutral-950 rounded-xl p-6 shadow-md max-w-3xl mx-auto border border-neutral-800 flex flex-col min-h-[30rem] max-h-[calc(100vh-16rem)] overflow-y-auto custom-scrollbar">
-            <h2 className="text-2xl font-semibold mb-6 text-neutral-100">Send a Greet</h2>
-            <div className="space-y-5 flex-grow">
-              <div>
-                <label htmlFor="twitterHandle" className="block text-sm font-medium text-neutral-400 mb-1.5">Twitter Handle (Optional)</label>
-                <input
-                  id="twitterHandle"
-                  type="text"
-                  placeholder="@username"
-                  className="w-full bg-neutral-900 border border-neutral-700 rounded-md py-2 px-3 text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors duration-150"
-                  value={greetRecipient}
-                  onChange={(e) => setGreetRecipient(e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="greetMessage" className="block text-sm font-medium text-neutral-400 mb-1.5">Your Greet Message</label>
-                <textarea
-                  id="greetMessage"
-                  placeholder="Your Greet message..."
-                  className="w-full bg-neutral-900 border border-neutral-700 rounded-md py-2 px-3 text-neutral-100 placeholder-neutral-500 h-28 resize-none focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-colors duration-150"
-                  value={greetMessage}
-                  onChange={(e) => setGreetMessage(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end pt-4">
-              <button
-                onClick={handleSendGreet}
-                className="bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold py-2 px-5 rounded-full shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-75"
-              >
-                Send Greet
-              </button>
-            </div>
+          <div className="max-w-4xl mx-auto">
+            <XPostTracker />
           </div>
         )}
 
-        {activeSection === 'history' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">Recent Greets</h2>
-            <div className="space-y-2">
-              {greetHistory.map((greet, index) => (
-                <div key={index} className="text-green-500">
-                  {greet.recipient && <span className="text-red-500">@{greet.recipient}</span>} {greet.text}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {activeSection === 'history' && <LiveGreetHistory />}
 
-        {activeSection === 'holdings' && (
-          <div className="space-y-8">
-            <div className="bg-black/50 border border-green-500 rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-4">Your Holdings</h2>
-              <div className="text-green-500">
-                <p>GREET Balance: {greetBalance.toLocaleString()}</p>
-                <p>Your Tier: {greetBalance >= 50000000 ? 'Diamond' : 
-                             greetBalance >= 10000000 ? 'Gold' :
-                             greetBalance >= 5000000 ? 'Silver' :
-                             greetBalance >= 1000000 ? 'Bronze' : 'Free'}</p>
-              </div>
-            </div>
+        {activeSection === 'holdings' && <HoldingsAndStats />}
 
-            <div className="bg-black/50 border border-green-500 rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-4">Greet Pot</h2>
-              <div className="text-green-500">
-                <p className="text-2xl font-bold mb-2">{(greetPot).toLocaleString()} SOL</p>
-                <p className="text-sm">Next distribution in: 3d 12h</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'stats' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">Your Stats</h2>
-            <div className="grid grid-cols-2 gap-4 text-green-500">
-              <div className="space-y-2">
-                <div>
-                  <p className="text-sm opacity-75">Current Rank</p>
-                  <p className="text-xl font-bold">#{userRank}</p>
-                </div>
-                <div>
-                  <p className="text-sm opacity-75">Greet Streak</p>
-                  <p className="text-xl font-bold">{userStreak} days 🔥</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <p className="text-sm opacity-75">Greet Power</p>
-                  <p className="text-xl font-bold">{userPower} ⚡</p>
-                </div>
-                <div>
-                  <p className="text-sm opacity-75">Potential Reward</p>
-                  <p className="text-xl font-bold">{potentialReward.toFixed(2)} SOL</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeSection === 'leaderboard' && (
-          <div className="bg-black/50 border border-green-500 rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-4">Top Greeters</h2>
-            <div className="space-y-2">
-              {topGreeters.map((greeter, index) => (
-                <div key={index} className="flex justify-between items-center text-green-500">
-                  <span className="font-mono">#{index + 1} {greeter.address.slice(0, 4)}...{greeter.address.slice(-4)}</span>
-                  <span>{greeter.rewards.toFixed(2)} SOL</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {activeSection === 'leaderboard' && <Leaderboard />}
       </div>
+      
+      {/* Support Ghost - appears on each page */}
+      <SupportGhost currentPage={activeSection} />
+      
+      {/* Page Greet Ghost - appears on each page with typewriter message */}
+      <PageGreetGhost currentPage={activeSection} isRegisterModalOpen={isRegisterModalOpen} />
     </main>
   );
 }

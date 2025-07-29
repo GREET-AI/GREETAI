@@ -7,6 +7,10 @@ interface Message {
   timestamp: Date;
 }
 
+interface GreetBotProps {
+  currentPage?: string;
+}
+
 const GREET_PERSONALITY = {
   name: 'GREET',
   title: 'Command Center',
@@ -45,7 +49,7 @@ const GREET_PERSONALITY = {
   }
 };
 
-const GreetBot: React.FC = () => {
+const GreetBot: React.FC<GreetBotProps> = ({ currentPage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -53,12 +57,30 @@ const GreetBot: React.FC = () => {
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      const welcomeMessage = GREET_PERSONALITY.welcomeMessages[
-        Math.floor(Math.random() * GREET_PERSONALITY.welcomeMessages.length)
-      ];
+      let welcomeMessage;
+      
+      if (currentPage) {
+        // Page-specific welcome messages
+        const pageMessages = {
+          'dashboard': "YO ANON! 🔥 WELCOME TO GREET AI! I'M YOUR PERSONAL GUIDE THROUGH THE MOST DEGEN SOCIAL PLATFORM! Your dashboard is your command center - track your progress, view your rank, and dominate the GREET ecosystem!",
+          'launchpad': "YO ANON! 🚀 READY TO LAUNCH SOME TOKENS? I'M HERE TO GUIDE YOU THROUGH THE MOST DEGEN LAUNCHPAD! Choose between Pump.fun and LetsBonk.fun - let's make some magic happen!",
+          'launched-tokens': "YO ANON! 📊 CHECKING OUT YOUR LAUNCHED TOKENS? I'M HERE TO HELP YOU TRACK YOUR SUCCESS! Monitor performance, market data, and see your tokens dominate!",
+          'quests': "YO ANON! 🎯 QUEST TIME! I'M YOUR PERSONAL QUEST MASTER! Complete missions, earn XP, and climb the ranks to become a GREET legend!",
+          'x-post-tracker': "YO ANON! 📱 TRACKING YOUR X POSTS? I'M HERE TO HELP YOU ANALYZE YOUR VIRAL POTENTIAL! Let's make your posts go viral!",
+          'send': "YO ANON! 💸 SENDING GREET TOKENS? I'M HERE TO HELP YOU BUILD CONNECTIONS! Share the future of social interaction!",
+          'holdings': "YO ANON! 💎 CHECKING YOUR HOLDINGS? I'M HERE TO HELP YOU MANAGE YOUR PORTFOLIO! Track your investments and earnings!",
+          'history': "YO ANON! 📜 REVIEWING YOUR GREET JOURNEY? I'M HERE TO SHOW YOU YOUR PATH TO GREATNESS! Every action counts towards your success!"
+        };
+        welcomeMessage = pageMessages[currentPage as keyof typeof pageMessages] || GREET_PERSONALITY.welcomeMessages[0];
+      } else {
+        welcomeMessage = GREET_PERSONALITY.welcomeMessages[
+          Math.floor(Math.random() * GREET_PERSONALITY.welcomeMessages.length)
+        ];
+      }
+      
       addMessage(welcomeMessage, 'greet');
     }
-  }, [isOpen, messages.length]);
+  }, [isOpen, messages.length, currentPage]);
 
   const addMessage = (text: string, sender: 'user' | 'greet') => {
     setMessages(prev => [...prev, { text, sender, timestamp: new Date() }]);

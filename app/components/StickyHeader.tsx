@@ -7,7 +7,11 @@ import ClientWalletButton from "./ClientWalletButton";
 import UserProfile from "./UserProfile";
 import Image from "next/image";
 
-const StickyHeader: React.FC = () => {
+interface StickyHeaderProps {
+  onRegisterModalChange?: (isOpen: boolean) => void;
+}
+
+const StickyHeader: React.FC<StickyHeaderProps> = ({ onRegisterModalChange }) => {
   const { publicKey } = useWallet();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
@@ -22,6 +26,7 @@ const StickyHeader: React.FC = () => {
           
           if (!data.exists) {
             setShowRegisterModal(true);
+            onRegisterModalChange?.(true);
           }
         } catch (error) {
           console.error('Error checking user:', error);
@@ -62,7 +67,10 @@ const StickyHeader: React.FC = () => {
       {publicKey && (
         <RegisterModal
           isOpen={showRegisterModal}
-          onClose={() => setShowRegisterModal(false)}
+          onClose={() => {
+            setShowRegisterModal(false);
+            onRegisterModalChange?.(false);
+          }}
           walletAddress={publicKey.toString()}
         />
       )}

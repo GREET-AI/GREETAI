@@ -23,14 +23,14 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { disconnect } = useWallet();
 
-  const menuItems = [
+  const sections = [
     { id: 'quests', label: 'Quests', icon: Icons.quests },
-    { id: 'send', label: 'Send GREET', icon: Icons.send },
-    { id: 'launch', label: 'Launch Token', icon: Icons.launch },
+          { id: 'send', label: 'GREET', icon: Icons.send },
+            { id: 'launchpad', label: 'Launchpad', icon: Icons.launch },
+          { id: 'launched-tokens', label: 'Launched Tokens', icon: Icons.holdings },
     { id: 'history', label: 'History', icon: Icons.history },
-    { id: 'holdings', label: 'Holdings', icon: Icons.holdings },
-    { id: 'stats', label: 'Stats', icon: Icons.stats },
-    { id: 'leaderboard', label: 'Leaderboard', icon: Icons.leaderboard },
+          { id: 'holdings', label: 'Holdings & Stats', icon: Icons.holdings },
+    { id: 'leaderboard', label: 'Leaderboard', icon: Icons.leaderboard }
   ];
 
   const handleLogout = async () => {
@@ -65,16 +65,35 @@ export default function Sidebar({ activeSection, onSectionChange }: SidebarProps
       </div>
 
       <nav className="flex-1">
-        {menuItems.map((item) => (
+        {sections.map((item) => (
           <button
             key={item.id}
             onClick={() => onSectionChange(item.id)}
             className={`w-full text-left p-4 hover:bg-green-500/5 transition-all flex items-center gap-3
               ${activeSection === item.id ? 'bg-green-500/10 border-r-2 border-green-500 text-green-400' : 'text-gray-400'}`}
           >
-            <span className="text-xl">{item.icon}</span>
+            {item.id === 'send' ? (
+              <Image 
+                src="/GREET.png" 
+                alt="GREET" 
+                width={20} 
+                height={20} 
+                className="w-5 h-5"
+              />
+            ) : (
+              <span className="text-gray-400">{item.icon}</span>
+            )}
             {!isCollapsed && (
-              <span className="font-medium tracking-wide">{item.label}</span>
+              item.id === 'send' ? (
+                <span 
+                  className="font-chippunk font-bold tracking-wide"
+                  style={{ textShadow: '0 2px 8px #00FF41, 0 4px 16px #00FF41' }}
+                >
+                  {item.label}
+                </span>
+              ) : (
+                <span className="font-medium tracking-wide">{item.label}</span>
+              )
             )}
           </button>
         ))}
