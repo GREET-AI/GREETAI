@@ -254,6 +254,80 @@ export default function QuestSystem() {
         </div>
       </div>
 
+      {/* THE FIRST SELF-SHILLING LAUNCHPAD Banner */}
+      <div className="mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative overflow-hidden bg-gradient-to-r from-green-600/20 via-purple-600/20 to-green-600/20 border border-green-500/40 rounded-xl p-6"
+          whileHover={{ scale: 1.02 }}
+        >
+          {/* Animated background elements */}
+          <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-purple-500/5 animate-pulse"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl animate-ping"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl animate-pulse"></div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Image 
+                  src="/GREET.png" 
+                  alt="GREET" 
+                  width={48} 
+                  height={48} 
+                  className="w-12 h-12 animate-bounce"
+                />
+                <div>
+                  <h2 className="text-2xl font-bold text-white font-chippunk" style={{ textShadow: '0 2px 8px #00FF41, 0 4px 16px #00FF41' }}>
+                    THE FIRST SELF-SHILLING LAUNCHPAD
+                  </h2>
+                  <p className="text-green-400 text-sm">Revolution in Token Economics</p>
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-green-400">🚀</div>
+                  <div className="text-xs text-gray-400">REVOLUTIONARY</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="bg-black/30 rounded-lg p-3 border border-green-500/20">
+                <div className="text-green-400 font-bold mb-1">Endless Circle</div>
+                <div className="text-xs text-gray-300">Launch → Promote → Grow → Reward → Repeat</div>
+              </div>
+              <div className="bg-black/30 rounded-lg p-3 border border-green-500/20">
+                <div className="text-green-400 font-bold mb-1">Self-Sustaining</div>
+                <div className="text-xs text-gray-300">Every success story fuels the next launch</div>
+              </div>
+              <div className="bg-black/30 rounded-lg p-3 border border-green-500/20">
+                <div className="text-green-400 font-bold mb-1">Community Power</div>
+                <div className="text-xs text-gray-300">The entire community promotes every token</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <p className="text-gray-300 text-sm max-w-2xl">
+                What if a platform could promote itself? GREET is the world's first self-sustaining launchpad ecosystem where success breeds success in an endless virtuous cycle.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-green-500 to-green-600 text-black font-bold px-6 py-3 rounded-lg hover:from-green-400 hover:to-green-500 transition-all duration-300 shadow-lg hover:shadow-green-500/25"
+                onClick={() => {
+                  localStorage.setItem('greetActiveSection', 'how-it-works');
+                  window.location.href = '/';
+                }}
+              >
+                Learn More
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       <h2 className="text-3xl font-bold text-white mb-6 font-chippunk" style={{ textShadow: '0 2px 8px #00FF41, 0 4px 16px #00FF41' }}>GREET Quests</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
