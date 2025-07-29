@@ -33,7 +33,7 @@ const LaunchPad = () => {
   useEffect(() => {
     const updateCountdown = () => {
       const now = new Date().getTime();
-      const launchDate = new Date('2025-01-15T00:00:00Z').getTime(); // Set your launch date
+      const launchDate = new Date('2025-08-04T13:00:00Z').getTime(); // August 4th, 3 PM German time (1 PM UTC)
       const distance = launchDate - now;
 
       if (distance > 0) {
