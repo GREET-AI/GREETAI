@@ -12,134 +12,158 @@ interface TopToken {
   holders: number;
   marketCap: number;
   launchDate: string;
+  contractAddress: string;
+  isLaunchingSoon: boolean;
+  platform: 'letsbonk' | 'pumpfun';
+  mintAddress?: string;
+  volume24h?: number;
+  price?: number;
+  age?: string;
+  rank?: number;
 }
 
-interface TopUser {
-  id: string;
-  name: string;
-  username: string;
-  avatar?: string;
-  totalGreetsEarned: number;
-  totalGreetsSent: number;
-  rank: number;
-  streak: number;
+interface TokenData {
+  priceInUSD: number;
+  volume24h: number;
+  marketCap: number;
+  holders: number;
+  lastTradeTime: string;
 }
 
 const Leaderboard = () => {
   const [selectedCategory, setSelectedCategory] = useState<'tokens' | 'users'>('tokens');
   const [topTokens, setTopTokens] = useState<TopToken[]>([]);
-  const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const [tokenData, setTokenData] = useState<Record<string, TokenData>>({});
 
   useEffect(() => {
-    // Simulate loading data
-    const mockTokens: TopToken[] = [
+    // Initialize with GREET token as placeholder
+    const initialTokens: TopToken[] = [
       {
-        id: '1',
+        id: 'greet',
         name: 'GREET',
         symbol: 'GREET',
         imageUrl: '/GREET.png',
-        totalGreets: 1250000,
-        holders: 15420,
-        marketCap: 2500000,
-        launchDate: '2024-01-15'
-      },
-      {
-        id: '2',
-        name: 'DegenCoin',
-        symbol: 'DEGEN',
-        imageUrl: '/letsbonk.png',
-        totalGreets: 890000,
-        holders: 8920,
-        marketCap: 1800000,
-        launchDate: '2024-01-20'
-      },
-      {
-        id: '3',
-        name: 'MoonToken',
-        symbol: 'MOON',
-        imageUrl: '/pumplogo.png',
-        totalGreets: 567000,
-        holders: 6540,
-        marketCap: 1200000,
-        launchDate: '2024-01-25'
-      },
-      {
-        id: '4',
-        name: 'ApeCoin',
-        symbol: 'APE',
-        totalGreets: 345000,
-        holders: 4320,
-        marketCap: 890000,
-        launchDate: '2024-01-30'
-      },
-      {
-        id: '5',
-        name: 'WhaleToken',
-        symbol: 'WHALE',
-        totalGreets: 234000,
-        holders: 3210,
-        marketCap: 567000,
-        launchDate: '2024-02-01'
+        totalGreets: 0,
+        holders: 0,
+        marketCap: 0,
+        launchDate: '2024-01-15',
+        contractAddress: 'To be announced',
+        isLaunchingSoon: true,
+        platform: 'letsbonk',
+        mintAddress: undefined
       }
     ];
 
-    const mockUsers: TopUser[] = [
-      {
-        id: '1',
-        name: 'CryptoWhale',
-        username: '@cryptowhale',
-        avatar: '/boy.png',
-        totalGreetsEarned: 125000,
-        totalGreetsSent: 89000,
-        rank: 1,
-        streak: 15
-      },
-      {
-        id: '2',
-        name: 'DegenMaster',
-        username: '@degenmaster',
-        avatar: '/boy.png',
-        totalGreetsEarned: 98000,
-        totalGreetsSent: 67000,
-        rank: 2,
-        streak: 12
-      },
-      {
-        id: '3',
-        name: 'ApeTrader',
-        username: '@apetrader',
-        avatar: '/boy.png',
-        totalGreetsEarned: 76000,
-        totalGreetsSent: 54000,
-        rank: 3,
-        streak: 8
-      },
-      {
-        id: '4',
-        name: 'SolanaInfluencer',
-        username: '@solana_influencer',
-        avatar: '/boy.png',
-        totalGreetsEarned: 65000,
-        totalGreetsSent: 43000,
-        rank: 4,
-        streak: 10
-      },
-      {
-        id: '5',
-        name: 'MoonShooter',
-        username: '@moonshooter',
-        avatar: '/boy.png',
-        totalGreetsEarned: 54000,
-        totalGreetsSent: 32000,
-        rank: 5,
-        streak: 6
-      }
-    ];
-
-    setTopTokens(mockTokens);
-    setTopUsers(mockUsers);
+    setTopTokens(initialTokens);
+    fetchLetsBonkTokens();
     setIsLoading(false);
+  }, []);
+
+  // Fetch top 6 tokens from LetsBonk.fun
+  const fetchLetsBonkTokens = async () => {
+    try {
+      const response = await fetch('/api/bitquery/letsbonk-detailed-tokens', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.tokens && data.tokens.length > 0) {
+          const letsbonkTokens: TopToken[] = data.tokens.map((token: any) => ({
+            id: token.id.toString(),
+            name: token.name,
+            symbol: token.symbol,
+            imageUrl: `/GREET.png`, // Default image for now
+            totalGreets: token.volume24h || 0,
+            holders: 0, // Would need separate query for holder count
+            marketCap: token.marketCap || 0,
+            launchDate: 'N/A',
+            contractAddress: token.contractAddress || 'N/A',
+            isLaunchingSoon: false,
+            platform: 'letsbonk' as const,
+            mintAddress: token.mintAddress,
+            volume24h: token.volume24h,
+            price: token.price,
+            age: token.age,
+            rank: token.rank
+          }));
+
+          setTopTokens(letsbonkTokens);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching LetsBonk tokens:', error);
+    }
+  };
+
+  // Fetch real token data from Bitquery API
+  const fetchTokenData = async (mintAddress: string, platform: 'letsbonk' | 'pumpfun') => {
+    try {
+      const response = await fetch(`/api/bitquery/token-stats?mintAddress=${mintAddress}&platform=${platform}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (error) {
+      console.error('Error fetching token data:', error);
+    }
+    return null;
+  };
+
+  // Update token data when mint address is available
+  useEffect(() => {
+    const updateTokenData = async () => {
+      const updatedTokens = await Promise.all(
+        topTokens.map(async (token) => {
+          if (token.mintAddress) {
+            const data = await fetchTokenData(token.mintAddress, token.platform);
+            if (data) {
+              // Update token with real data
+              return {
+                ...token,
+                totalGreets: data.volume24h || 0,
+                holders: data.holders || 0,
+                marketCap: data.marketCap || 0
+              };
+            }
+          }
+          return token;
+        })
+      );
+      setTopTokens(updatedTokens);
+    };
+
+    updateTokenData();
+  }, [topTokens.length]);
+
+  // Function to update token with mint address (called when token is created)
+  const updateTokenMintAddress = (tokenId: string, mintAddress: string, platform: 'letsbonk' | 'pumpfun') => {
+    setTopTokens(prevTokens => 
+      prevTokens.map(token => 
+        token.id === tokenId 
+          ? { ...token, mintAddress, platform }
+          : token
+      )
+    );
+  };
+
+  // Example: Update GREET token when it's created
+  // This would be called from the launchpad when token is successfully created
+  useEffect(() => {
+    // For demo purposes - in real app this would be triggered by token creation
+    // updateTokenMintAddress('1', 'GREET_MINT_ADDRESS_HERE', 'letsbonk');
   }, []);
 
   const formatNumber = (num: number) => {
@@ -152,6 +176,21 @@ const Leaderboard = () => {
     if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `$${(num / 1000).toFixed(1)}K`;
     return `$${num}`;
+  };
+
+  const copyToClipboard = async (text: string, tokenId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedAddress(tokenId);
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+    }
+  };
+
+  const handleCALink = (platform: 'letsbonk' | 'pumpfun') => {
+    const url = platform === 'letsbonk' ? 'https://letsbonk.fun' : 'https://pump.fun';
+    window.open(url, '_blank');
   };
 
   if (isLoading) {
@@ -183,7 +222,7 @@ const Leaderboard = () => {
             GREET Leaderboard
           </h1>
         </div>
-        <p className="text-green-400 text-lg mb-6">Top tokens and users by GREET activity</p>
+        <p className="text-green-400 text-lg mb-6">Top 6 tokens from LetsBonk.fun - Real-time data</p>
         
         {/* Category Selector */}
         <div className="flex gap-4 justify-center">
@@ -210,7 +249,7 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      {/* Top Tokens Leaderboard */}
+      {/* GREET Tokens Leaderboard */}
       {selectedCategory === 'tokens' && (
         <div className="space-y-4">
           {topTokens.map((token, index) => (
@@ -223,7 +262,7 @@ const Leaderboard = () => {
                     index === 1 ? 'bg-gray-400' :
                     index === 2 ? 'bg-orange-600' : 'bg-green-500'
                   }`}>
-                    #{index + 1}
+                    #{token.rank || index + 1}
                   </div>
                   
                   <div className="flex items-center gap-3">
@@ -241,8 +280,22 @@ const Leaderboard = () => {
                       </div>
                     )}
                     <div>
-                      <h3 className="text-white font-bold text-lg">{token.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-white font-bold text-lg">{token.name}</h3>
+                        {token.isLaunchingSoon && (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-green-500/20 rounded-full border border-green-500/30">
+                            <span className="text-green-400 text-xs font-bold animate-pulse">🚀</span>
+                            <span className="text-green-400 text-xs font-bold">LAUNCHING SOON</span>
+                          </div>
+                        )}
+                        <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
+                          {token.platform === 'letsbonk' ? 'LetsBonk.fun' : 'Pump.fun'}
+                        </span>
+                      </div>
                       <p className="text-gray-400">${token.symbol}</p>
+                      {token.age && token.age !== 'N/A' && (
+                        <p className="text-xs text-gray-500">{token.age}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -250,8 +303,8 @@ const Leaderboard = () => {
                 {/* Stats */}
                 <div className="flex items-center gap-8">
                   <div className="text-center">
-                    <div className="text-green-400 font-bold text-lg">{formatNumber(token.totalGreets)}</div>
-                    <div className="text-gray-400 text-sm">GREETS</div>
+                    <div className="text-green-400 font-bold text-lg">{formatNumber(token.volume24h || token.totalGreets)}</div>
+                    <div className="text-gray-400 text-sm">24H VOLUME</div>
                   </div>
                   <div className="text-center">
                     <div className="text-blue-400 font-bold text-lg">{formatNumber(token.holders)}</div>
@@ -261,6 +314,31 @@ const Leaderboard = () => {
                     <div className="text-purple-400 font-bold text-lg">{formatMarketCap(token.marketCap)}</div>
                     <div className="text-gray-400 text-sm">MARKET CAP</div>
                   </div>
+                  {token.price && token.price > 0 && (
+                    <div className="text-center">
+                      <div className="text-yellow-400 font-bold text-lg">${token.price.toFixed(6)}</div>
+                      <div className="text-gray-400 text-sm">PRICE</div>
+                    </div>
+                  )}
+                  
+                  {/* Contract Address */}
+                  <div className="text-center">
+                    <div className="text-gray-300 font-mono text-sm bg-black/50 rounded px-3 py-2 border border-gray-600 cursor-pointer hover:border-green-500/50 transition-colors"
+                         onClick={() => copyToClipboard(token.contractAddress, token.id)}>
+                      {copiedAddress === token.id ? (
+                        <span className="text-green-400">✓ Copied!</span>
+                      ) : (
+                        <span className="text-gray-300">{token.contractAddress}</span>
+                      )}
+                    </div>
+                    <div className="text-gray-400 text-xs mt-1">CONTRACT ADDRESS</div>
+                    <button 
+                      onClick={() => handleCALink(token.platform)}
+                      className="text-green-400 text-xs hover:text-green-300 transition-colors mt-1 underline"
+                    >
+                      View on {token.platform === 'letsbonk' ? 'LetsBonk.fun' : 'Pump.fun'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -268,61 +346,12 @@ const Leaderboard = () => {
         </div>
       )}
 
-      {/* Top Users Leaderboard */}
+      {/* Top Users Leaderboard - Placeholder */}
       {selectedCategory === 'users' && (
-        <div className="space-y-4">
-          {topUsers.map((user, index) => (
-            <div key={user.id} className="bg-black/30 border border-green-500/30 rounded-xl p-6 hover:border-green-500/50 transition-colors">
-              <div className="flex items-center justify-between">
-                {/* Rank & User Info */}
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                    index === 0 ? 'bg-yellow-500' :
-                    index === 1 ? 'bg-gray-400' :
-                    index === 2 ? 'bg-orange-600' : 'bg-green-500'
-                  }`}>
-                    #{index + 1}
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    {user.avatar ? (
-                      <Image
-                        src={user.avatar}
-                        alt={user.name}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 rounded-full"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-                        <span className="text-sm">👤</span>
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="text-white font-bold text-lg">{user.name}</h3>
-                      <p className="text-gray-400">{user.username}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="flex items-center gap-8">
-                  <div className="text-center">
-                    <div className="text-green-400 font-bold text-lg">{formatNumber(user.totalGreetsEarned)}</div>
-                    <div className="text-gray-400 text-sm">EARNED</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-blue-400 font-bold text-lg">{formatNumber(user.totalGreetsSent)}</div>
-                    <div className="text-gray-400 text-sm">SENT</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-purple-400 font-bold text-lg">{user.streak} days 🔥</div>
-                    <div className="text-gray-400 text-sm">STREAK</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="bg-black/30 border border-green-500/30 rounded-xl p-6 text-center">
+          <div className="text-green-400 text-lg mb-4">👥 Top Users</div>
+          <p className="text-gray-400">User rankings will be available when GREET token is live</p>
+          <p className="text-gray-500 text-sm mt-2">Track your progress and compete with other GREET users</p>
         </div>
       )}
     </div>

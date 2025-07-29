@@ -10,6 +10,7 @@ interface GreetActivity {
     name: string;
     username: string;
     avatar?: string;
+    verified?: boolean;
   };
   content: string;
   timestamp: string;
@@ -26,58 +27,75 @@ const LiveGreetHistory = () => {
   const [activities, setActivities] = useState<GreetActivity[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'greets' | 'x-posts' | 'influencers'>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hoveredPost, setHoveredPost] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate live data
-    const mockActivities: GreetActivity[] = [
-      {
-        id: '1',
-        type: 'greet',
-        user: { name: 'CryptoWhale', username: '@cryptowhale', avatar: '/boy.png' },
-        content: 'Just sent 1000 GREET to @degenmaster! LFG! 🚀',
-        timestamp: '2 minutes ago',
-        engagement: { likes: 45, shares: 12, comments: 8 },
-        token: 'GREET',
-        amount: 1000
-      },
-      {
-        id: '2',
-        type: 'x-post',
-        user: { name: 'DegenMaster', username: '@degenmaster', avatar: '/boy.png' },
-        content: 'GREET is the future of social interaction! Just received 1000 GREET from @cryptowhale! This is how we build the community! 💚',
-        timestamp: '5 minutes ago',
-        engagement: { likes: 128, shares: 34, comments: 23 }
-      },
-      {
-        id: '3',
-        type: 'influencer',
-        user: { name: 'SolanaInfluencer', username: '@solana_influencer', avatar: '/boy.png' },
-        content: 'BREAKING: GREET platform is revolutionizing social interaction! The viral mechanics are insane! 🚀',
-        timestamp: '8 minutes ago',
-        engagement: { likes: 567, shares: 89, comments: 45 }
-      },
-      {
-        id: '4',
-        type: 'greet',
-        user: { name: 'ApeTrader', username: '@apetrader', avatar: '/boy.png' },
-        content: 'Sent 500 GREET to @newuser! Welcome to the family! 💪',
-        timestamp: '12 minutes ago',
-        engagement: { likes: 23, shares: 5, comments: 3 },
-        token: 'GREET',
-        amount: 500
-      },
-      {
-        id: '5',
-        type: 'x-post',
-        user: { name: 'NewUser', username: '@newuser', avatar: '/boy.png' },
-        content: 'Just joined GREET and received my first 500 GREET from @apetrader! This community is amazing! 🔥',
-        timestamp: '15 minutes ago',
-        engagement: { likes: 67, shares: 12, comments: 9 }
+    const fetchTwitterPosts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await fetch('/api/twitter/posts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch Twitter posts');
+        }
+        
+        const data = await response.json();
+        
+        if (data.posts && data.posts.length > 0) {
+          // Add verification status to posts
+          const postsWithVerification = data.posts.map((post: any) => ({
+            ...post,
+            user: {
+              ...post.user,
+              verified: post.user.username.toLowerCase().includes('greet') || post.user.username.toLowerCase().includes('ai')
+            }
+          }));
+          setActivities(postsWithVerification);
+        } else {
+          // Fallback to some sample posts if no Twitter posts are available
+          setActivities([
+            {
+              id: '1',
+              type: 'x-post',
+              user: { 
+                name: 'GREET', 
+                username: '@GREET', 
+                avatar: '/GREET.png',
+                verified: true
+              },
+              content: 'Welcome to GREET! The future of social interaction is here! 🚀💚',
+              timestamp: 'Just now',
+              engagement: { likes: 0, shares: 0, comments: 0 }
+            }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error fetching Twitter posts:', err);
+        setError('Failed to load Twitter posts');
+        // Fallback to sample data
+        setActivities([
+          {
+            id: '1',
+            type: 'x-post',
+            user: { 
+              name: 'GREET', 
+              username: '@GREET', 
+              avatar: '/GREET.png',
+              verified: true
+            },
+            content: 'Welcome to GREET! The future of social interaction is here! 🚀💚',
+            timestamp: 'Just now',
+            engagement: { likes: 0, shares: 0, comments: 0 }
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
       }
-    ];
+    };
 
-    setActivities(mockActivities);
-    setIsLoading(false);
+    fetchTwitterPosts();
   }, []);
 
   const filteredActivities = activities.filter(activity => {
@@ -117,6 +135,17 @@ const LiveGreetHistory = () => {
         <div className="bg-gradient-to-r from-green-500/20 to-purple-500/20 border border-green-500/30 rounded-xl p-6 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
           <p className="text-green-400">Loading live GREET activity...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full max-w-7xl mx-auto p-6">
+        <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl p-6 text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <p className="text-gray-400 text-sm">Showing sample data</p>
         </div>
       </div>
     );
@@ -216,7 +245,12 @@ const LiveGreetHistory = () => {
       {/* X-Style Posts Feed */}
       <div className="max-w-2xl mx-auto space-y-0">
         {filteredActivities.map((activity) => (
-          <div key={activity.id} className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer">
+          <div 
+            key={activity.id} 
+            className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors cursor-pointer relative"
+            onMouseEnter={() => setHoveredPost(activity.id)}
+            onMouseLeave={() => setHoveredPost(null)}
+          >
             <div className="p-4">
               <div className="flex gap-3">
                 {/* Avatar */}
@@ -241,6 +275,11 @@ const LiveGreetHistory = () => {
                   {/* Header */}
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-bold text-white hover:underline">{activity.user.name}</span>
+                    {activity.user.verified && (
+                      <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"/>
+                      </svg>
+                    )}
                     <span className="text-gray-500">{activity.user.username}</span>
                     <span className="text-gray-500">·</span>
                     <span className="text-gray-500 text-sm">{activity.timestamp}</span>
@@ -269,7 +308,16 @@ const LiveGreetHistory = () => {
                   
                   {/* Engagement Actions */}
                   <div className="flex items-center justify-between max-w-md">
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-blue-400 transition-colors group">
+                    <button 
+                      className="flex items-center gap-2 text-gray-500 hover:text-blue-400 transition-colors group"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Link to Twitter post
+                        if (activity.type === 'x-post') {
+                          window.open(`https://twitter.com/${activity.user.username.replace('@', '')}/status/${activity.id}`, '_blank');
+                        }
+                      }}
+                    >
                       <div className="w-5 h-5 flex items-center justify-center group-hover:bg-blue-400/20 rounded-full transition-colors">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8.12 14.7A1 1 0 0 0 8 15v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-.12-.5L13 12.5V9a1 1 0 0 0-2 0v3.5l-2.88 2.2z"/>
@@ -278,7 +326,16 @@ const LiveGreetHistory = () => {
                       <span className="text-sm">{formatNumber(activity.engagement.comments)}</span>
                     </button>
                     
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-green-400 transition-colors group">
+                    <button 
+                      className="flex items-center gap-2 text-gray-500 hover:text-green-400 transition-colors group"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Link to Twitter post
+                        if (activity.type === 'x-post') {
+                          window.open(`https://twitter.com/${activity.user.username.replace('@', '')}/status/${activity.id}`, '_blank');
+                        }
+                      }}
+                    >
                       <div className="w-5 h-5 flex items-center justify-center group-hover:bg-green-400/20 rounded-full transition-colors">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -287,19 +344,37 @@ const LiveGreetHistory = () => {
                       <span className="text-sm">{formatNumber(activity.engagement.likes)}</span>
                     </button>
                     
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-blue-400 transition-colors group">
+                    <button 
+                      className="flex items-center gap-2 text-gray-500 hover:text-blue-400 transition-colors group"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Link to Twitter post
+                        if (activity.type === 'x-post') {
+                          window.open(`https://twitter.com/${activity.user.username.replace('@', '')}/status/${activity.id}`, '_blank');
+                        }
+                      }}
+                    >
                       <div className="w-5 h-5 flex items-center justify-center group-hover:bg-blue-400/20 rounded-full transition-colors">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+                          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
                         </svg>
                       </div>
                       <span className="text-sm">{formatNumber(activity.engagement.shares)}</span>
                     </button>
                     
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-blue-400 transition-colors group">
+                    <button 
+                      className="flex items-center gap-2 text-gray-500 hover:text-blue-400 transition-colors group"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Link to Twitter post
+                        if (activity.type === 'x-post') {
+                          window.open(`https://twitter.com/${activity.user.username.replace('@', '')}/status/${activity.id}`, '_blank');
+                        }
+                      }}
+                    >
                       <div className="w-5 h-5 flex items-center justify-center group-hover:bg-blue-400/20 rounded-full transition-colors">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M18 8c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm0 2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm-6 8c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm0-2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                          <path d="M18 8c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm0 2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm-6 8c1.66 0 3-1.34 3-3s1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm0-2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
                         </svg>
                       </div>
                     </button>
@@ -307,6 +382,54 @@ const LiveGreetHistory = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Hover Preview for X Posts */}
+            {hoveredPost === activity.id && activity.type === 'x-post' && (
+              <div className="absolute top-full left-0 right-0 z-50 bg-black/95 border border-gray-700 rounded-lg p-4 shadow-2xl">
+                <div className="flex items-center gap-3 mb-3">
+                  <Image
+                    src={activity.user.avatar || '/GREET.png'}
+                    alt={activity.user.name}
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold text-white text-sm">{activity.user.name}</span>
+                      {activity.user.verified && (
+                        <svg className="w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"/>
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-gray-400 text-xs">{activity.user.username}</span>
+                  </div>
+                </div>
+                <div className="text-white text-sm mb-3">{activity.content}</div>
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <span>Posted {activity.timestamp}</span>
+                  <div className="flex items-center gap-4">
+                    <span>❤️ {formatNumber(activity.engagement.likes)}</span>
+                    <span>🔄 {formatNumber(activity.engagement.shares)}</span>
+                    <span>💬 {formatNumber(activity.engagement.comments)}</span>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-blue-400">
+                  Click to view on X
+                </div>
+              </div>
+            )}
+            
+            {/* Clickable overlay for the entire post */}
+            <div 
+              className="absolute inset-0 cursor-pointer"
+              onClick={() => {
+                if (activity.type === 'x-post') {
+                  window.open(`https://twitter.com/${activity.user.username.replace('@', '')}/status/${activity.id}`, '_blank');
+                }
+              }}
+            />
           </div>
         ))}
       </div>
